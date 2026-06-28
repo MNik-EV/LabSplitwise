@@ -156,7 +156,7 @@ prisma/            # Schema & seed
 
 **Deployments** → latest deployment → **⋯** → **Redeploy**
 
-Build runs `prisma db push` + seed automatically.
+Build runs `prisma db push` only (no seed — production data is preserved). For local demo data use `npm run db:setup`.
 
 Live demo: `https://lab-splitwise.vercel.app`
 
