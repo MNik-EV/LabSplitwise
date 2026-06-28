@@ -1,11 +1,12 @@
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
 import { StatisticsCard } from "@/components/dashboard/statistics-card";
 import { DailyExpenseChart, WeeklyExpenseChart } from "@/components/dashboard/dashboard-charts";
+import { StatsHighlightCard } from "@/components/stats/stats-highlight-card";
 import { UserCard } from "@/components/members/user-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMemberStats, getReports, getDashboardStats, getSettings } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
 import { formatLocalizedDate } from "@/lib/format";
+import { Trophy, Users, Store, TrendingUp } from "lucide-react";
 
 export default async function StatsPage() {
   const { t, locale, formatMoney, formatCount } = await getServerI18n();
@@ -26,10 +27,14 @@ export default async function StatsPage() {
         })}
       />
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-          {t("stats.currentWeek")}
-        </h2>
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("stats.currentWeek")}
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatisticsCard
             title={t("dashboard.totalWeek")}
@@ -58,11 +63,15 @@ export default async function StatsPage() {
         </div>
       </section>
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-          {t("stats.allTime")}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("stats.allTime")}
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <StatisticsCard
             title={t("stats.totalOrders")}
             value={reports.totalOrders}
@@ -75,54 +84,64 @@ export default async function StatsPage() {
             icon="scale"
           />
           {reports.topPayer && (
-            <Card className="overflow-hidden border-primary/20 bg-primary/5">
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("stats.topPayer")}
-                </p>
-                <p className="mt-2 text-lg font-bold">{reports.topPayer.name}</p>
-                <p className="text-sm text-primary">{formatMoney(reports.topPayer.total)}</p>
-              </CardContent>
-            </Card>
+            <StatsHighlightCard
+              label={t("stats.topPayer")}
+              title={reports.topPayer.name}
+              subtitle={formatMoney(reports.topPayer.total)}
+              icon={Trophy}
+              variant="primary"
+            />
           )}
           {reports.topAttendance && (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("stats.topAttendance")}
-                </p>
-                <p className="mt-2 text-lg font-bold">{reports.topAttendance.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatCount(reports.topAttendance.count)} {t("common.times")}
-                </p>
-              </CardContent>
-            </Card>
+            <StatsHighlightCard
+              label={t("stats.topAttendance")}
+              title={reports.topAttendance.name}
+              subtitle={`${formatCount(reports.topAttendance.count)} ${t("common.times")}`}
+              icon={Users}
+              variant="success"
+            />
           )}
           {reports.topRestaurant && (
-            <Card className="sm:col-span-2 xl:col-span-1">
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("stats.topRestaurant")}
-                </p>
-                <p className="mt-2 text-lg font-bold">{reports.topRestaurant.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatCount(reports.topRestaurant.count)} {t("common.orders")}
-                </p>
-              </CardContent>
-            </Card>
+            <StatsHighlightCard
+              label={t("stats.topRestaurant")}
+              title={reports.topRestaurant.name}
+              subtitle={`${formatCount(reports.topRestaurant.count)} ${t("common.orders")}`}
+              icon={Store}
+              variant="warning"
+            />
           )}
         </div>
       </section>
 
-      <section className="mb-8 grid gap-4 lg:grid-cols-2">
-        <DailyExpenseChart dailyData={reports.dailyChart} title={t("stats.dailyChart")} />
-        <WeeklyExpenseChart dailyData={reports.weeklyChart} title={t("stats.weeklyChart")} />
+      <section className="mb-10">
+        <div className="mb-4 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold">{t("stats.chartsTitle")}</h2>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <DailyExpenseChart
+            dailyData={reports.dailyChart}
+            title={t("stats.dailyChart")}
+            description={t("stats.dailyChartDesc")}
+            variant="stats"
+          />
+          <WeeklyExpenseChart
+            dailyData={reports.weeklyChart}
+            title={t("stats.weeklyChart")}
+            description={t("stats.weeklyChartDesc")}
+            variant="stats"
+          />
+        </div>
       </section>
 
       <section>
-        <CardHeader className="px-0 pb-4">
-          <CardTitle className="text-lg">{t("stats.memberBreakdown")}</CardTitle>
-        </CardHeader>
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("stats.memberBreakdown")}
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {members.map((member, i) => (
             <UserCard

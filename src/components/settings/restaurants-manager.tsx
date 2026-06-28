@@ -18,10 +18,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { FormError } from "@/components/shared/form-error";
 import { createRestaurant, updateRestaurant, deleteRestaurant } from "@/actions";
 import { toastActionError } from "@/lib/action-error-toast";
 import { useRouter } from "next/navigation";
 import { fieldLimits } from "@/lib/field-limits";
+import { isNameTooShort, isRestaurantNameTooLong } from "@/lib/field-validation";
 import { useI18n } from "@/components/layout/i18n-provider";
 
 interface RestaurantsManagerProps {
@@ -32,15 +34,38 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [editNameError, setEditNameError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { t } = useI18n();
+
+  const validateRestaurantName = (
+    value: string,
+    setError: (msg: string | null) => void,
+  ): boolean => {
+    if (isNameTooShort(value)) {
+      const msg = t("validation.restaurantNameMin");
+      setError(msg);
+      toast.error(msg);
+      return false;
+    }
+    if (isRestaurantNameTooLong(value)) {
+      const msg = t("validation.restaurantNameMax");
+      setError(msg);
+      toast.error(msg);
+      return false;
+    }
+    setError(null);
+    return true;
+  };
 
   const handleCreate = () => {
     if (!name.trim()) {
       toast.error(t("settings.restaurantRequired"));
       return;
     }
+    if (!validateRestaurantName(name, setNameError)) return;
     startTransition(async () => {
       try {
         await createRestaurant({ name: name.trim() });
@@ -68,6 +93,7 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
       toast.error(t("settings.restaurantRequired"));
       return;
     }
+    if (!validateRestaurantName(editName, setEditNameError)) return;
     startTransition(async () => {
       try {
         await updateRestaurant({ id, name: editName.trim() });
@@ -98,18 +124,26 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
         <CardTitle className="text-base">{t("settings.restaurants")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            placeholder={t("settings.newRestaurant")}
-            maxLength={fieldLimits.restaurantName}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-          />
-          <Button onClick={handleCreate} disabled={isPending}>
-            <Plus className="h-4 w-4" />
-            {t("settings.addRestaurant")}
-          </Button>
+        <div className="space-y-1">
+          <div className="flex gap-2">
+            <Input
+              placeholder={t("settings.newRestaurant")}
+              maxLength={fieldLimits.restaurantName + 1}
+              value={name}
+              onChange={(e) => {
+                const v = e.target.value;
+                setName(v);
+                if (isRestaurantNameTooLong(v)) setNameError(t("validation.restaurantNameMax"));
+                else setNameError(null);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+            />
+            <Button onClick={handleCreate} disabled={isPending}>
+              <Plus className="h-4 w-4" />
+              {t("settings.addRestaurant")}
+            </Button>
+          </div>
+          <FormError message={nameError ?? undefined} />
         </div>
 
         {restaurants.length === 0 ? (
@@ -126,10 +160,17 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
                     <div className="flex-1 space-y-1.5">
                       <Label>{t("settings.newRestaurant")}</Label>
                       <Input
-                        maxLength={fieldLimits.restaurantName}
+                        maxLength={fieldLimits.restaurantName + 1}
                         value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setEditName(v);
+                          if (isRestaurantNameTooLong(v))
+                            setEditNameError(t("validation.restaurantNameMax"));
+                          else setEditNameError(null);
+                        }}
                       />
+                      <FormError message={editNameError ?? undefined} />
                     </div>
                     <div className="flex gap-2">
                       <Button size="icon" onClick={() => handleUpdate(r.id)} disabled={isPending}>

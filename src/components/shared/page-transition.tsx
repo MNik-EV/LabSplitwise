@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -8,9 +9,16 @@ const pageVariants = {
   exit: { opacity: 0, y: -8 },
 };
 
-export function PageTransition({ children }: { children: React.ReactNode }) {
+export function PageTransition({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
+      className={className}
       variants={pageVariants}
       initial="initial"
       animate="animate"
@@ -26,13 +34,20 @@ export function PageHeader({
   title,
   description,
   action,
+  className,
 }: {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      className={cn(
+        "mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
+        className,
+      )}
+    >
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
         {description && (

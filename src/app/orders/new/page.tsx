@@ -16,8 +16,8 @@ export default async function NewOrderPage() {
   ]);
 
   return (
-    <PageTransition>
-      <PageHeader title={t("orders.newTitle")} />
+    <PageTransition className="flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden sm:max-h-[calc(100dvh-8rem)]">
+      <PageHeader title={t("orders.newTitle")} className="mb-4 shrink-0" />
       <OrderForm
         users={users}
         restaurants={restaurants}

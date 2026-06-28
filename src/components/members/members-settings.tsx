@@ -20,9 +20,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
+import { FormError } from "@/components/shared/form-error";
 import { createUser, updateUser, deleteUser } from "@/actions";
 import { formatCardNumber, isValidCardNumber, normalizeCardNumber } from "@/lib/card-number";
 import { fieldLimits } from "@/lib/field-limits";
+import { isNameTooLong, isNameTooShort } from "@/lib/field-validation";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/layout/i18n-provider";
 
@@ -42,6 +44,8 @@ export function MembersSettings({ members }: MembersSettingsProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editCardNumber, setEditCardNumber] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [editNameError, setEditNameError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { t } = useI18n();
@@ -55,11 +59,29 @@ export function MembersSettings({ members }: MembersSettingsProps) {
     return true;
   };
 
+  const validateName = (value: string, setError: (msg: string | null) => void): boolean => {
+    if (isNameTooShort(value)) {
+      const msg = t("validation.nameMin");
+      setError(msg);
+      toast.error(msg);
+      return false;
+    }
+    if (isNameTooLong(value)) {
+      const msg = t("validation.nameMax");
+      setError(msg);
+      toast.error(msg);
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
   const handleCreate = () => {
     if (!name.trim()) {
       toast.error(t("members.nameRequired"));
       return;
     }
+    if (!validateName(name, setNameError)) return;
     if (!validateCard(cardNumber)) return;
 
     startTransition(async () => {
@@ -95,6 +117,7 @@ export function MembersSettings({ members }: MembersSettingsProps) {
       toast.error(t("members.nameRequired"));
       return;
     }
+    if (!validateName(editName, setEditNameError)) return;
     if (!validateCard(editCardNumber)) return;
 
     startTransition(async () => {
@@ -147,10 +170,16 @@ export function MembersSettings({ members }: MembersSettingsProps) {
               <Input
                 id="new-member-name"
                 placeholder={t("members.namePlaceholder")}
-                maxLength={fieldLimits.memberName}
+                maxLength={fieldLimits.memberName + 1}
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setName(v);
+                  if (isNameTooLong(v)) setNameError(t("validation.nameMax"));
+                  else setNameError(null);
+                }}
               />
+              <FormError message={nameError ?? undefined} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="new-member-card">{t("members.cardNumber")}</Label>
@@ -186,10 +215,16 @@ export function MembersSettings({ members }: MembersSettingsProps) {
                       <div className="flex-1 space-y-1.5">
                         <Label>{t("members.namePlaceholder")}</Label>
                         <Input
-                          maxLength={fieldLimits.memberName}
+                          maxLength={fieldLimits.memberName + 1}
                           value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setEditName(v);
+                            if (isNameTooLong(v)) setEditNameError(t("validation.nameMax"));
+                            else setEditNameError(null);
+                          }}
                         />
+                        <FormError message={editNameError ?? undefined} />
                       </div>
                       <div className="flex-1 space-y-1.5">
                         <Label>{t("members.cardNumber")}</Label>
