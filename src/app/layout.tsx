@@ -1,4 +1,7 @@
+@import "./globals.css";
+
 import type { Metadata } from "next";
+import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { I18nProvider } from "@/components/layout/i18n-provider";
 import { Sidebar, MobileHeader } from "@/components/layout/sidebar";
@@ -6,6 +9,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { ClientErrorBoundary } from "@/components/shared/client-error-boundary";
 import { getLocale } from "@/i18n/server";
 import { localeConfig } from "@/config/defaults";
+
+const vazirmatn = Vazirmatn({
+  subsets: ["arabic", "latin"],
+  variable: "--font-vazirmatn",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "ZLab Lunch | Group Expense Manager",
