@@ -152,6 +152,11 @@ export const dictionary = {
     labShare: "سهم آزمایشگاه",
     orderCount: "تعداد سفارش",
     transferCount: "تعداد انتقال",
+    transferLine: "{from} باید {amount} به {to} بدهد",
+    debtor: "بدهکار",
+    creditor: "طلبکار",
+    pays: "پرداخت می‌کند",
+    receives: "دریافت می‌کند",
   },
   settings: {
     title: "تنظیمات",

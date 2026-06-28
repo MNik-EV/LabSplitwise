@@ -72,18 +72,15 @@ export default async function SettlementPage() {
         <div className="mt-8">
           <h2 className="mb-4 text-lg font-semibold">{t("settlement.savedSettlements")}</h2>
           <div className="space-y-2">
-            {settlement.existingSettlements.map((s) => (
-              <Card key={s.id}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <span>
-                    {s.fromUser.name} → {s.toUser.name}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">{formatMoney(s.amount)}</span>
-                    {s.isPaid && <Badge variant="success">{t("settlement.paid")}</Badge>}
-                  </div>
-                </CardContent>
-              </Card>
+            {settlement.existingSettlements.map((s, i) => (
+              <SettlementCard
+                key={s.id}
+                fromUser={s.fromUser}
+                toUser={s.toUser}
+                amount={s.amount}
+                isPaid={s.isPaid}
+                index={i}
+              />
             ))}
           </div>
         </div>

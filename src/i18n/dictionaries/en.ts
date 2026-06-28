@@ -152,6 +152,11 @@ export const dictionary = {
     labShare: "Lab contribution",
     orderCount: "Orders",
     transferCount: "Transfers",
+    transferLine: "{from} pays {amount} to {to}",
+    debtor: "Owes",
+    creditor: "Receives",
+    pays: "Pays",
+    receives: "Gets paid",
   },
   settings: {
     title: "Settings",
