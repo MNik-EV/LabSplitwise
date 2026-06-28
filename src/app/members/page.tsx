@@ -22,6 +22,7 @@ export default async function MembersPage() {
               id: m.id,
               name: m.name,
               cardNumber: m.cardNumber,
+              avatar: m.avatar,
             }))}
           />
         </div>
@@ -39,6 +40,7 @@ export default async function MembersPage() {
                   key={member.id}
                   name={member.name}
                   cardNumber={member.cardNumber}
+                  avatar={member.avatar}
                 />
               ))}
             </div>

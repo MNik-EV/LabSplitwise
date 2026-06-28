@@ -48,23 +48,3 @@ export function formatJalaliDate(date: Date | string): string {
 export function formatJalaliShort(date: Date | string): string {
   return formatLocalizedShort(date, "fa");
 }
-
-export function getInitials(name: string): string {
-  return name.charAt(0);
-}
-
-export const AVATAR_COLORS = [
-  "bg-blue-500",
-  "bg-emerald-500",
-  "bg-violet-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-cyan-500",
-  "bg-orange-500",
-  "bg-indigo-500",
-];
-
-export function getAvatarColor(name: string): string {
-  const index = name.charCodeAt(0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[index];
-}

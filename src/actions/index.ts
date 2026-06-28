@@ -1,5 +1,5 @@
 export { getSettings, updateSettings } from "./settings";
-export { getUsers, getUsersForOrderEdit, createUser, updateUser, deleteUser } from "./users";
+export { getUsers, getUsersForOrderEdit, createUser, updateUser, updateUserAvatar, deleteUser } from "./users";
 export {
   getRestaurants,
   createRestaurant,

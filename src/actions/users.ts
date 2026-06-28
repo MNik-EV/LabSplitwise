@@ -65,6 +65,22 @@ export async function updateUser(data: unknown) {
   return user;
 }
 
+export async function updateUserAvatar(userId: string, avatar: string | null) {
+  await requireSession();
+  if (!userId) throw new ActionError("validation.invalidId");
+
+  const locale = await getLocale();
+  const { updateUserAvatarSchema } = buildValidationSchemas(getDictionary(locale).validation);
+  const parsed = updateUserAvatarSchema.parse({ id: userId, avatar });
+
+  const user = await prisma.user.update({
+    where: { id: parsed.id },
+    data: { avatar: parsed.avatar },
+  });
+  revalidateAll();
+  return user;
+}
+
 export async function deleteUser(id: string) {
   await requireSession();
   if (!id) throw new ActionError("validation.invalidId");

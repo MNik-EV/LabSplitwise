@@ -58,6 +58,18 @@ export function buildValidationSchemas(v: Dictionary["validation"]) {
         .max(fieldLimits.memberName, v.nameMax),
       cardNumber: cardNumberField(v.cardInvalid),
     }),
+    updateUserAvatarSchema: z.object({
+      id: z.string().min(1),
+      avatar: z
+        .string()
+        .nullable()
+        .refine(
+          (val) =>
+            val === null ||
+            (val.startsWith("data:image/") && val.length <= fieldLimits.avatarDataUrl),
+          v.avatarInvalid,
+        ),
+    }),
     createRestaurantSchema: z.object({
       name: z
         .string()

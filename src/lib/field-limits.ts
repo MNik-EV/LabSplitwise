@@ -4,4 +4,5 @@ export const fieldLimits = {
   labName: 60,
   expenseName: 40,
   orderNotes: 300,
+  avatarDataUrl: 200_000,
 } as const;

@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
+import { AvatarUpload } from "@/components/members/avatar-upload";
 import { FormError } from "@/components/shared/form-error";
 import { createUser, updateUser, deleteUser } from "@/actions";
 import { formatCardNumber, isValidCardNumber, normalizeCardNumber } from "@/lib/card-number";
@@ -32,6 +33,7 @@ interface MemberRow {
   id: string;
   name: string;
   cardNumber: string | null;
+  avatar: string | null;
 }
 
 interface MembersSettingsProps {
@@ -211,7 +213,17 @@ export function MembersSettings({ members }: MembersSettingsProps) {
                   className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   {editingId === member.id ? (
-                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="flex w-full flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <AvatarUpload
+                          userId={member.id}
+                          name={member.name}
+                          avatar={member.avatar}
+                          size="xl"
+                        />
+                        <p className="text-xs text-muted-foreground">{t("members.avatarHint")}</p>
+                      </div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                       <div className="flex-1 space-y-1.5">
                         <Label>{t("members.namePlaceholder")}</Label>
                         <Input
@@ -247,9 +259,16 @@ export function MembersSettings({ members }: MembersSettingsProps) {
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
+                      </div>
                     </div>
                   ) : (
                     <>
+                      <AvatarUpload
+                        userId={member.id}
+                        name={member.name}
+                        avatar={member.avatar}
+                        size="lg"
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold">{member.name}</p>
                         {member.cardNumber ? (

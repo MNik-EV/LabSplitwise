@@ -2,10 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getInitials, getAvatarColor } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
 import { useI18n } from "@/components/layout/i18n-provider";
 
@@ -13,6 +11,7 @@ interface UserCardProps {
   user: {
     id: string;
     name: string;
+    avatar?: string | null;
     cardNumber?: string | null;
     attendance?: number;
     payments?: number;
@@ -37,11 +36,7 @@ export function UserCard({ user, index = 0 }: UserCardProps) {
       <Card>
         <CardContent className="p-5">
           <div className="mb-4 flex items-center gap-3">
-            <Avatar className={cn("h-12 w-12", getAvatarColor(user.name))}>
-              <AvatarFallback className="bg-transparent text-lg text-white">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar src={user.avatar} name={user.name} size="lg" />
             <div>
               <h3 className="font-semibold">{user.name}</h3>
               {user.cardNumber && (

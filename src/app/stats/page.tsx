@@ -149,6 +149,7 @@ export default async function StatsPage() {
               user={{
                 id: member.id,
                 name: member.name,
+                avatar: member.avatar,
                 cardNumber: member.cardNumber,
                 attendance: member.attendance,
                 payments: member.payments,

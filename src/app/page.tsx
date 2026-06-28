@@ -2,16 +2,15 @@ import Link from "next/link";
 import { PlusCircle, ArrowLeftRight, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { StatisticsCard } from "@/components/dashboard/statistics-card";
 import { DailyExpenseChart } from "@/components/dashboard/dashboard-charts";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { OrderCard } from "@/components/orders/order-card";
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
 import { getDashboardStats, getSettings } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
-import { formatLocalizedDate, getInitials, getAvatarColor } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatLocalizedDate } from "@/lib/format";
 
 export default async function DashboardPage() {
   const { t, locale, formatMoney } = await getServerI18n();
@@ -112,11 +111,11 @@ export default async function DashboardPage() {
                         <span className="w-5 text-sm font-medium text-muted-foreground">
                           {i + 1}
                         </span>
-                        <Avatar className={cn("h-9 w-9", getAvatarColor(member.user.name))}>
-                          <AvatarFallback className="bg-transparent text-sm text-white">
-                            {getInitials(member.user.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                          src={member.user.avatar}
+                          name={member.user.name}
+                          size="sm"
+                        />
                         <div>
                           <p className="font-medium">{member.user.name}</p>
                           <p className="text-xs text-muted-foreground">
