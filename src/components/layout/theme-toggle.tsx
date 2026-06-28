@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "./i18n-provider";
@@ -8,6 +9,18 @@ import { useI18n } from "./i18n-provider";
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return (
+      <Button variant="outline" className="relative w-full justify-start gap-2" disabled>
+        <Sun className="h-4 w-4" />
+        <span className="ms-2">{t("theme.dark")}</span>
+      </Button>
+    );
+  }
 
   return (
     <Button

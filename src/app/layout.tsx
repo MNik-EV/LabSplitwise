@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { I18nProvider } from "@/components/layout/i18n-provider";
 import { Sidebar, MobileHeader } from "@/components/layout/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { ClientErrorBoundary } from "@/components/shared/client-error-boundary";
 import { getLocale } from "@/i18n/server";
 import { localeConfig } from "@/config/defaults";
 
@@ -29,15 +30,17 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <I18nProvider locale={locale}>
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <div className="flex flex-1 flex-col">
-                <MobileHeader />
-                <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-                  {children}
-                </main>
+            <ClientErrorBoundary>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <div className="flex flex-1 flex-col">
+                  <MobileHeader />
+                  <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+                    {children}
+                  </main>
+                </div>
               </div>
-            </div>
+            </ClientErrorBoundary>
             <Toaster position="top-center" richColors />
           </I18nProvider>
         </ThemeProvider>

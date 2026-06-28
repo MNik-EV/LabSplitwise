@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,12 +35,15 @@ export function Sidebar() {
   const pathname = usePathname();
   const { sidebarOpen, setSidebarOpen } = useAppStore();
   const { t, dir } = useI18n();
+  const [mounted, setMounted] = useState(false);
   const isRtl = dir === "rtl";
+
+  useEffect(() => setMounted(true), []);
 
   return (
     <>
       <AnimatePresence>
-        {sidebarOpen && (
+        {mounted && sidebarOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -54,7 +58,7 @@ export function Sidebar() {
         className={cn(
           "fixed inset-y-0 z-50 flex w-64 flex-col bg-card shadow-card transition-transform lg:static lg:translate-x-0 lg:shadow-none",
           isRtl ? "right-0 border-l" : "left-0 border-r",
-          sidebarOpen
+          !mounted || sidebarOpen
             ? "translate-x-0"
             : isRtl
               ? "translate-x-full lg:translate-x-0"

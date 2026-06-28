@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -12,6 +13,7 @@ import {
   Line,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatLocalizedShort } from "@/lib/format";
 import { useI18n } from "@/components/layout/i18n-provider";
 
@@ -49,9 +51,16 @@ function ChartTooltip({
   );
 }
 
+function ChartSkeleton() {
+  return <Skeleton className="h-[240px] w-full rounded-xl" />;
+}
+
 export function DailyExpenseChart({ dailyData, title }: DashboardChartsProps) {
   const { t, locale, formatMoney } = useI18n();
+  const [mounted, setMounted] = useState(false);
   const chartTitle = title ?? t("dashboard.dailyChart");
+
+  useEffect(() => setMounted(true), []);
 
   const data = dailyData.map((d) => ({
     ...d,
@@ -64,24 +73,35 @@ export function DailyExpenseChart({ dailyData, title }: DashboardChartsProps) {
         <CardTitle className="text-base">{chartTitle}</CardTitle>
       </CardHeader>
       <CardContent>
-        {data.length === 0 ? (
+        {!mounted ? (
+          <ChartSkeleton />
+        ) : data.length === 0 ? (
           <div className="flex h-[240px] items-center justify-center text-muted-foreground">
             {t("common.noData")}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip
-                content={
-                  <ChartTooltip locale={locale} formatMoney={formatMoney} />
-                }
-              />
-              <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[240px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  content={
+                    <ChartTooltip locale={locale} formatMoney={formatMoney} />
+                  }
+                />
+                <Bar
+                  dataKey="amount"
+                  fill="hsl(var(--primary))"
+                  radius={[6, 6, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -90,7 +110,10 @@ export function DailyExpenseChart({ dailyData, title }: DashboardChartsProps) {
 
 export function WeeklyExpenseChart({ dailyData, title }: DashboardChartsProps) {
   const { t, locale, formatMoney } = useI18n();
+  const [mounted, setMounted] = useState(false);
   const chartTitle = title ?? t("dashboard.weeklyChart");
+
+  useEffect(() => setMounted(true), []);
 
   const data = dailyData.map((d) => ({
     ...d,
@@ -103,30 +126,34 @@ export function WeeklyExpenseChart({ dailyData, title }: DashboardChartsProps) {
         <CardTitle className="text-base">{chartTitle}</CardTitle>
       </CardHeader>
       <CardContent>
-        {data.length === 0 ? (
+        {!mounted ? (
+          <ChartSkeleton />
+        ) : data.length === 0 ? (
           <div className="flex h-[240px] items-center justify-center text-muted-foreground">
             {t("common.noData")}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-              <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip
-                content={
-                  <ChartTooltip locale={locale} formatMoney={formatMoney} />
-                }
-              />
-              <Line
-                type="monotone"
-                dataKey="amount"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--primary))", r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="h-[240px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip
+                  content={
+                    <ChartTooltip locale={locale} formatMoney={formatMoney} />
+                  }
+                />
+                <Line
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>
