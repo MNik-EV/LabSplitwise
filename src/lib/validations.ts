@@ -1,4 +1,25 @@
 import { z } from "zod";
+import { normalizeCardNumber } from "./card-number";
+
+const cardNumberField = z
+  .string()
+  .default("")
+  .transform((v) => {
+    const digits = normalizeCardNumber(v);
+    return digits.length ? digits : null;
+  })
+  .refine((v) => v === null || v.length === 16, "شماره کارت باید ۱۶ رقم باشد");
+
+export const createUserSchema = z.object({
+  name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
+  cardNumber: cardNumberField,
+});
+
+export const updateUserSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
+  cardNumber: cardNumberField,
+});
 
 export const orderMemberSchema = z.object({
   userId: z.string().min(1, "عضو را انتخاب کنید"),
@@ -22,10 +43,6 @@ export const createOrderSchema = z.object({
 
 export const updateOrderSchema = createOrderSchema.extend({
   id: z.string().min(1),
-});
-
-export const createUserSchema = z.object({
-  name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد"),
 });
 
 export const createRestaurantSchema = z.object({

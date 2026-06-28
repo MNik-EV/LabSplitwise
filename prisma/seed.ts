@@ -27,7 +27,7 @@ async function main() {
   });
 
   const users = await Promise.all([
-    prisma.user.create({ data: { name: "مهدی" } }),
+    prisma.user.create({ data: { name: "مهدی", cardNumber: "6219861927824416" } }),
     prisma.user.create({ data: { name: "داوود" } }),
     prisma.user.create({ data: { name: "محمدحسین" } }),
     prisma.user.create({ data: { name: "حسن" } }),

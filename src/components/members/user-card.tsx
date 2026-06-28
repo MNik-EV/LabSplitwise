@@ -6,12 +6,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getInitials, getAvatarColor } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CopyCardNumber } from "@/components/shared/copy-card-number";
 import { useI18n } from "@/components/layout/i18n-provider";
 
 interface UserCardProps {
   user: {
     id: string;
     name: string;
+    cardNumber?: string | null;
     attendance?: number;
     payments?: number;
     totalPaid?: number;
@@ -42,6 +44,11 @@ export function UserCard({ user, index = 0 }: UserCardProps) {
             </Avatar>
             <div>
               <h3 className="font-semibold">{user.name}</h3>
+              {user.cardNumber && (
+                <div className="mt-1">
+                  <CopyCardNumber value={user.cardNumber} compact />
+                </div>
+              )}
               {user.attendance !== undefined && (
                 <p className="text-sm text-muted-foreground">
                   {formatCount(user.attendance)} {t("common.attendance")} ·{" "}

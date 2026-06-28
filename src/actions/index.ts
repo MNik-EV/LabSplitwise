@@ -13,6 +13,7 @@ import {
   createOrderSchema,
   updateOrderSchema,
   createUserSchema,
+  updateUserSchema,
   createRestaurantSchema,
   updateSettingsSchema,
 } from "@/lib/validations";
@@ -64,7 +65,25 @@ export async function getUsers() {
 
 export async function createUser(data: unknown) {
   const parsed = createUserSchema.parse(data);
-  const user = await prisma.user.create({ data: parsed });
+  const user = await prisma.user.create({
+    data: {
+      name: parsed.name,
+      cardNumber: parsed.cardNumber,
+    },
+  });
+  revalidateAll();
+  return user;
+}
+
+export async function updateUser(data: unknown) {
+  const parsed = updateUserSchema.parse(data);
+  const user = await prisma.user.update({
+    where: { id: parsed.id },
+    data: {
+      name: parsed.name,
+      cardNumber: parsed.cardNumber,
+    },
+  });
   revalidateAll();
   return user;
 }

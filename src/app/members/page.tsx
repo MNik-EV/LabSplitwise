@@ -1,8 +1,8 @@
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
 import { UserCard } from "@/components/members/user-card";
+import { MembersSettings } from "@/components/members/members-settings";
 import { DailyExpenseChart, WeeklyExpenseChart } from "@/components/dashboard/dashboard-charts";
 import { Card, CardContent } from "@/components/ui/card";
-import { MembersManager } from "@/components/members/members-manager";
 import { getMemberStats, getReports } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
 
@@ -17,8 +17,14 @@ export default async function MembersPage() {
         description={t("members.count", { count: members.length })}
       />
 
-      <div className="mb-8">
-        <MembersManager />
+      <div className="mb-8 mx-auto max-w-3xl">
+        <MembersSettings
+          members={members.map((m) => ({
+            id: m.id,
+            name: m.name,
+            cardNumber: m.cardNumber,
+          }))}
+        />
       </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -74,6 +80,7 @@ export default async function MembersPage() {
             user={{
               id: member.id,
               name: member.name,
+              cardNumber: member.cardNumber,
               attendance: member.attendance,
               payments: member.payments,
               totalPaid: member.totalPaid,

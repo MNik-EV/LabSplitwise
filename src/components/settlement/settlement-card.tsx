@@ -7,11 +7,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getInitials, getAvatarColor } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CopyCardNumber } from "@/components/shared/copy-card-number";
 import { useI18n } from "@/components/layout/i18n-provider";
 
 interface SettlementCardProps {
-  fromUser: { id: string; name: string };
-  toUser: { id: string; name: string };
+  fromUser: { id: string; name: string; cardNumber?: string | null };
+  toUser: { id: string; name: string; cardNumber?: string | null };
   amount: number;
   isPaid?: boolean;
   index?: number;
@@ -22,11 +23,13 @@ function PersonBlock({
   role,
   roleVariant,
   action,
+  cardNumber,
 }: {
   name: string;
   role: string;
   roleVariant: "destructive" | "success";
   action: string;
+  cardNumber?: string | null;
 }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-2 text-center">
@@ -40,6 +43,11 @@ function PersonBlock({
         {role}
       </Badge>
       <p className="text-xs text-muted-foreground">{action}</p>
+      {cardNumber && (
+        <div className="mt-1">
+          <CopyCardNumber value={cardNumber} compact />
+        </div>
+      )}
     </div>
   );
 }
@@ -98,8 +106,15 @@ export function SettlementCard({
               role={t("settlement.creditor")}
               roleVariant="success"
               action={t("settlement.receives")}
+              cardNumber={toUser.cardNumber}
             />
           </div>
+
+          {!isPaid && toUser.cardNumber && (
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              {t("settlement.tapCardToCopy")}
+            </p>
+          )}
 
           {isPaid && (
             <div className="mt-4 flex justify-center">
