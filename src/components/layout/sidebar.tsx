@@ -27,6 +27,7 @@ import { useI18n } from "@/components/layout/i18n-provider";
 
 interface SidebarProps {
   authEnabled?: boolean;
+  labName?: string;
 }
 
 const navKeys = [
@@ -39,7 +40,7 @@ const navKeys = [
   { href: "/settings", key: "nav.settings", icon: Settings },
 ] as const;
 
-export function Sidebar({ authEnabled = false }: SidebarProps) {
+export function Sidebar({ authEnabled = false, labName }: SidebarProps) {
   const pathname = usePathname();
   const { sidebarOpen, setSidebarOpen } = useAppStore();
   const { t, dir } = useI18n();
@@ -79,7 +80,7 @@ export function Sidebar({ authEnabled = false }: SidebarProps) {
               <UtensilsCrossed className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-bold">ZLab</p>
+              <p className="text-sm font-bold">{labName?.trim() || "ZLab"}</p>
               <p className="text-xs text-muted-foreground">{t("common.appSubtitle")}</p>
             </div>
           </Link>
@@ -103,6 +104,7 @@ export function Sidebar({ authEnabled = false }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
+                aria-current={isActive ? "page" : undefined}
               >
                 <motion.div
                   whileHover={{ x: isRtl ? -4 : 4 }}

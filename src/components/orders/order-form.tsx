@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { LocaleDatePicker } from "@/components/shared/locale-date-picker";
 import { FormError } from "@/components/shared/form-error";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -431,6 +432,26 @@ export function OrderForm({
                 <Plus className="h-4 w-4" />
                 {t("orders.addShared")}
               </Button>
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="order-notes">{t("orders.notes")}</Label>
+                <Textarea
+                  id="order-notes"
+                  placeholder={t("orders.notesPlaceholder")}
+                  rows={2}
+                  {...form.register("notes")}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {step === 4 && !calculation && (
+            <motion.div
+              key="step4-empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="rounded-xl border border-dashed p-8 text-center text-muted-foreground"
+            >
+              {t("orders.reviewEmpty")}
             </motion.div>
           )}
 
@@ -500,7 +521,7 @@ export function OrderForm({
               <NextChevron className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending || !calculation}>
               {isPending
                 ? t("orders.submitting")
                 : mode === "edit"

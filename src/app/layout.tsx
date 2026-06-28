@@ -12,27 +12,33 @@ import { PwaRegister } from "@/components/shared/pwa-register";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { isAuthEnabled } from "@/lib/auth-session";
 import { getLocale } from "@/i18n/server";
+import { getDictionary } from "@/i18n";
+import { getSettings } from "@/actions";
 import { localeConfig } from "@/config/defaults";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
+  return {
+    title: dict.meta.title,
+    description: dict.meta.description,
+    applicationName: dict.common.appName,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: dict.common.appName,
+    },
+    formatDetection: {
+      telephone: false,
+    },
+  };
+}
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic", "latin"],
   variable: "--font-vazirmatn",
   display: "swap",
 });
-
-export const metadata: Metadata = {
-  title: "ZLab Lunch | Group Expense Manager",
-  description: "Smart lunch expense & settlement system for research labs",
-  applicationName: "ZLab Lunch",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "ZLab",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-};
 
 export const viewport = {
   themeColor: [
@@ -49,6 +55,7 @@ export default async function RootLayout({
   const locale = await getLocale();
   const { dir } = localeConfig[locale];
   const authEnabled = isAuthEnabled();
+  const settings = await getSettings();
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
@@ -64,7 +71,7 @@ export default async function RootLayout({
               <ClientErrorBoundary>
                 <PwaRegister />
                 <div className="flex min-h-screen">
-                  <Sidebar authEnabled={authEnabled} />
+                  <Sidebar authEnabled={authEnabled} labName={settings.labName} />
                 <div className="flex flex-1 flex-col">
                   <InstallPrompt />
                   <MobileHeader />

@@ -42,6 +42,8 @@ export default async function ArchiveWeekPage({ params }: ArchiveWeekPageProps) 
               weekStartDay={settings.weekStartDay}
               weekKey={weekKey}
               totalOrders={settlement.totalOrders}
+              paidCount={settlement.paidCount}
+              totalTransferCount={settlement.totalTransferCount}
             />
           ) : undefined
         }
@@ -57,6 +59,7 @@ export default async function ArchiveWeekPage({ params }: ArchiveWeekPageProps) 
 
       <SettlementView
         transfers={settlement.transfers}
+        balances={settlement.balances}
         totalExpenses={settlement.totalExpenses}
         labContribution={settlement.labContribution}
         totalOrders={settlement.totalOrders}
@@ -64,6 +67,10 @@ export default async function ArchiveWeekPage({ params }: ArchiveWeekPageProps) 
         totalTransferCount={settlement.totalTransferCount}
         isClosed={settlement.isClosed}
         readOnly={settlement.isClosed}
+        weekLabel={t("settlement.weekRange", {
+          start: formatLocalizedDate(settlement.weekStart, locale),
+          end: formatLocalizedDate(settlement.weekEnd, locale),
+        })}
       />
 
       {orders.length > 0 && (

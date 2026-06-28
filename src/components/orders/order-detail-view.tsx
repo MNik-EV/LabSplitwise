@@ -10,30 +10,28 @@ import {
   Pencil,
   ArrowRight,
   ArrowLeft,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DeleteOrderDialog } from "@/components/orders/delete-order-dialog";
-import { getInitials, getAvatarColor, formatLocalizedDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatLocalizedDate } from "@/lib/format";
 import { useI18n } from "@/components/layout/i18n-provider";
 
 type OrderDetail = NonNullable<Awaited<ReturnType<typeof import("@/actions").getOrder>>>;
 
-export function OrderDetailView({ order }: { order: OrderDetail }) {
+interface OrderDetailViewProps {
+  order: OrderDetail;
+  readOnly?: boolean;
+}
+
+export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProps) {
   const { t, formatMoney, locale, dir } = useI18n();
   const BackArrow = dir === "rtl" ? ArrowRight : ArrowLeft;
 
-  const sharedPerPerson =
-    order.members.length > 0
-      ? Math.round(
-          order.expenses.reduce((s, e) => s + e.amount, 0) / order.members.length,
-        )
-      : 0;
-
+  const totalShared = order.expenses.reduce((s, e) => s + e.amount, 0);
   const payerPocket =
     order.members.find((m) => m.userId === order.payerId)?.pocketAmount ?? 0;
   const payerFromOthers = order.members
@@ -42,19 +40,24 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
 
   return (
     <>
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         <Button variant="outline" asChild>
           <Link href="/orders">
             <BackArrow className="h-4 w-4" />
             {t("common.back")}
           </Link>
         </Button>
-        <Button asChild>
-          <Link href={`/orders/${order.id}/edit`}>
-            <Pencil className="h-4 w-4" />
-            {t("common.edit")}
-          </Link>
-        </Button>
+        {!readOnly && (
+          <Button asChild>
+            <Link href={`/orders/${order.id}/edit`} aria-label={t("common.edit")}>
+              <Pencil className="h-4 w-4" />
+              {t("common.edit")}
+            </Link>
+          </Button>
+        )}
+        {readOnly && (
+          <Badge variant="secondary">{t("orders.weekClosedHint")}</Badge>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -65,19 +68,13 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {order.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between rounded-xl border p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        className={cn("h-10 w-10", getAvatarColor(member.user.name))}
-                      >
-                        <AvatarFallback className="bg-transparent text-white">
-                          {getInitials(member.user.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                {order.members.map((member) => {
+                  const sharedPortion = member.shareAmount - member.foodPrice;
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between rounded-xl border p-4"
+                    >
                       <div>
                         <p className="font-medium">{member.user.name}</p>
                         {member.userId === order.payerId && (
@@ -86,19 +83,19 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
                           </Badge>
                         )}
                       </div>
+                      <div className="text-end">
+                        <p className="font-bold">{formatMoney(member.shareAmount)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("common.food")}: {formatMoney(member.foodPrice)} +{" "}
+                          {t("common.shared")}: {formatMoney(sharedPortion)}
+                        </p>
+                        <p className="text-xs text-success">
+                          {t("common.fromPocket")}: {formatMoney(member.pocketAmount)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-end">
-                      <p className="font-bold">{formatMoney(member.shareAmount)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("common.food")}: {formatMoney(member.foodPrice)} +{" "}
-                        {t("common.shared")}: {formatMoney(sharedPerPerson)}
-                      </p>
-                      <p className="text-xs text-success">
-                        {t("common.fromPocket")}: {formatMoney(member.pocketAmount)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -122,15 +119,25 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
                   <Separator className="my-2" />
                   <div className="flex justify-between text-sm font-medium">
                     <span>{t("orders.sharedTotal")}</span>
-                    <span>
-                      {formatMoney(order.expenses.reduce((s, e) => s + e.amount, 0))}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{t("orders.sharePerPerson")}</span>
-                    <span>{formatMoney(sharedPerPerson)}</span>
+                    <span>{formatMoney(totalShared)}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {order.notes?.trim() && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <StickyNote className="h-4 w-4" />
+                  {t("orders.notes")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {order.notes}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -210,11 +217,13 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
             </CardContent>
           </Card>
 
-          <DeleteOrderDialog orderId={order.id} restaurantName={order.restaurant.name}>
-            <Button variant="destructive" className="w-full">
-              {t("orders.deleteTitle")}
-            </Button>
-          </DeleteOrderDialog>
+          {!readOnly && (
+            <DeleteOrderDialog orderId={order.id} restaurantName={order.restaurant.name}>
+              <Button variant="destructive" className="w-full">
+                {t("orders.deleteTitle")}
+              </Button>
+            </DeleteOrderDialog>
+          )}
         </div>
       </div>
     </>

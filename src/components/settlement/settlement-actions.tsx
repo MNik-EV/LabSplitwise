@@ -24,6 +24,8 @@ interface SettlementActionsProps {
   isClosed?: boolean;
   weekKey?: string;
   totalOrders?: number;
+  paidCount?: number;
+  totalTransferCount?: number;
 }
 
 export function SettlementActions({
@@ -31,6 +33,8 @@ export function SettlementActions({
   isClosed = false,
   weekKey,
   totalOrders = 0,
+  paidCount = 0,
+  totalTransferCount = 0,
 }: SettlementActionsProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -61,6 +65,8 @@ export function SettlementActions({
     });
   };
 
+  const unpaidCount = totalTransferCount - paidCount;
+
   if (isClosed) return null;
 
   return (
@@ -80,7 +86,11 @@ export function SettlementActions({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("settlement.closeTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("settlement.closeDesc")}</AlertDialogDescription>
+            <AlertDialogDescription>
+            {unpaidCount > 0
+              ? t("settlement.closeDescUnpaid", { count: unpaidCount })
+              : t("settlement.closeDesc")}
+          </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

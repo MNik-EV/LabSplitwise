@@ -35,6 +35,10 @@ export const dictionary = {
     avgFood: "Avg. food price",
     error: "Something went wrong",
   },
+  meta: {
+    title: "ZLab Lunch | Group Expense Manager",
+    description: "Smart lunch expense and weekly settlement for research labs",
+  },
   nav: {
     dashboard: "Dashboard",
     newOrder: "New order",
@@ -126,6 +130,9 @@ export const dictionary = {
     submit: "Submit order",
     saveChanges: "Save changes",
     submitting: "Submitting...",
+    notes: "Notes",
+    notesPlaceholder: "Optional note (e.g. no onions)",
+    reviewEmpty: "Order data is incomplete — go back to previous steps",
   },
   members: {
     title: "Members",
@@ -157,6 +164,8 @@ export const dictionary = {
     topRestaurant: "Top restaurant",
     dailyChart: "Daily expense chart",
     weeklyChart: "Weekly expense chart",
+    scopeAllTime: "all time",
+    scopeThisWeek: "this week",
   },
   settlement: {
     title: "Weekly settlement",
@@ -195,6 +204,12 @@ export const dictionary = {
     pendingWeekBanner: "Previous week is not closed yet — close it to archive.",
     closedBadge: "Archived",
     currentWeekBadge: "Current week",
+    balancesTitle: "Member balances (current week)",
+    share: "Share settlement",
+    shareCopied: "Settlement text copied",
+    shareError: "Could not share",
+    unpaidWarning: "{count} transfer(s) not marked paid — review before closing the week",
+    closeDescUnpaid: "{count} payment(s) not marked done. Closing archives the week but keeps payment status. Continue?",
   },
   archive: {
     title: "Weekly archive",
@@ -231,6 +246,7 @@ export const dictionary = {
     restaurantDeleteDesc: "Delete “{name}”?",
     restaurantDeleteSuccess: "Restaurant deleted",
     restaurantUpdateSuccess: "Restaurant updated",
+    restaurantsEmpty: "No restaurants yet",
     defaultLabel: "Default",
   },
   days: {

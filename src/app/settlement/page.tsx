@@ -29,6 +29,8 @@ export default async function SettlementPage() {
               weekStartDay={settings.weekStartDay}
               isClosed={settlement.isClosed}
               totalOrders={settlement.totalOrders}
+              paidCount={settlement.paidCount}
+              totalTransferCount={settlement.totalTransferCount}
             />
           ) : undefined
         }
@@ -41,6 +43,7 @@ export default async function SettlementPage() {
             <ClosePendingWeekButton
               weekKey={pendingWeek.weekKey}
               weekStartDay={settings.weekStartDay}
+              unpaidCount={pendingWeek.totalTransfers - pendingWeek.paidTransfers}
             />
           </CardContent>
         </Card>
@@ -48,12 +51,17 @@ export default async function SettlementPage() {
 
       <SettlementView
         transfers={settlement.transfers}
+        balances={settlement.balances}
         totalExpenses={settlement.totalExpenses}
         labContribution={settlement.labContribution}
         totalOrders={settlement.totalOrders}
         paidCount={settlement.paidCount}
         totalTransferCount={settlement.totalTransferCount}
         isClosed={settlement.isClosed}
+        weekLabel={t("settlement.weekRange", {
+          start: formatLocalizedDate(settlement.weekStart, locale),
+          end: formatLocalizedDate(settlement.weekEnd, locale),
+        })}
       />
     </PageTransition>
   );

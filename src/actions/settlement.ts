@@ -112,6 +112,17 @@ async function syncSettlementsForWeek(
   );
 
   for (const t of transfers) {
+    const existing = await prisma.settlement.findUnique({
+      where: {
+        weekStart_fromUserId_toUserId: {
+          weekStart: start,
+          fromUserId: t.fromUserId,
+          toUserId: t.toUserId,
+        },
+      },
+    });
+    const amountChanged = existing != null && existing.amount !== t.amount;
+
     await prisma.settlement.upsert({
       where: {
         weekStart_fromUserId_toUserId: {
@@ -128,7 +139,11 @@ async function syncSettlementsForWeek(
         amount: t.amount,
         isPaid: false,
       },
-      update: { amount: t.amount, weekEnd: end },
+      update: {
+        amount: t.amount,
+        weekEnd: end,
+        ...(amountChanged ? { isPaid: false, paidAt: null } : {}),
+      },
     });
   }
 
@@ -191,7 +206,6 @@ export async function getSettlementByWeekKey(weekKey: string, weekStartDay = 6) 
 }
 
 export async function saveWeeklySettlements(weekStartDay = 6) {
-  await requireSession();
   await requireSession();
   const { start, end } = getWeekRange(new Date(), weekStartDay);
   const settlement = await getSettlementForRange(start, end);

@@ -36,6 +36,8 @@ export function PaymentToggle({ settlementId, isPaid, disabled }: PaymentToggleP
       type="button"
       onClick={toggle}
       disabled={disabled || isPending}
+      aria-pressed={isPaid}
+      aria-label={isPaid ? t("settlement.paid") : t("settlement.markAsPaid")}
       className={cn(
         "flex w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all",
         isPaid

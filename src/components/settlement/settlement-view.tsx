@@ -1,8 +1,9 @@
 "use client";
 
-import { SettlementCard } from "@/components/settlement/settlement-card";
 import { WeeklySummary } from "@/components/settlement/weekly-summary";
-import { Card, CardContent } from "@/components/ui/card";
+import { SettlementCard } from "@/components/settlement/settlement-card";
+import { ShareSettlementButton } from "@/components/settlement/share-settlement-button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/components/layout/i18n-provider";
 
@@ -16,8 +17,14 @@ interface TransferItem {
   toUser: { id: string; name: string; cardNumber?: string | null };
 }
 
+interface BalanceItem {
+  user: { id: string; name: string };
+  amount: number;
+}
+
 interface SettlementViewProps {
   transfers: TransferItem[];
+  balances?: BalanceItem[];
   totalExpenses: number;
   labContribution: number;
   totalOrders: number;
@@ -25,10 +32,12 @@ interface SettlementViewProps {
   totalTransferCount: number;
   isClosed?: boolean;
   readOnly?: boolean;
+  weekLabel?: string;
 }
 
 export function SettlementView({
   transfers,
+  balances = [],
   totalExpenses,
   labContribution,
   totalOrders,
@@ -36,9 +45,11 @@ export function SettlementView({
   totalTransferCount,
   isClosed,
   readOnly,
+  weekLabel,
 }: SettlementViewProps) {
-  const { t } = useI18n();
+  const { t, formatMoney } = useI18n();
   const allPaid = totalTransferCount > 0 && paidCount === totalTransferCount;
+  const unpaidCount = totalTransferCount - paidCount;
 
   return (
     <>
@@ -61,7 +72,41 @@ export function SettlementView({
           {!isClosed && !readOnly && (
             <Badge variant="default">{t("settlement.currentWeekBadge")}</Badge>
           )}
+          <ShareSettlementButton transfers={transfers} weekLabel={weekLabel} />
         </div>
+      )}
+
+      {!isClosed && !readOnly && unpaidCount > 0 && (
+        <Card className="mt-4 border-warning/40 bg-warning/5">
+          <CardContent className="p-4 text-sm">
+            {t("settlement.unpaidWarning", { count: unpaidCount })}
+          </CardContent>
+        </Card>
+      )}
+
+      {balances.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">{t("settlement.balancesTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {balances.map((b) => (
+                <div
+                  key={b.user.id}
+                  className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                >
+                  <span className="font-medium">{b.user.name}</span>
+                  <Badge variant={b.amount >= 0 ? "success" : "destructive"}>
+                    {b.amount >= 0
+                      ? `${t("common.credit")} ${formatMoney(b.amount)}`
+                      : `${t("common.debt")} ${formatMoney(-b.amount)}`}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="mt-8">

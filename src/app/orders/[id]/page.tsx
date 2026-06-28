@@ -1,6 +1,6 @@
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
 import { OrderDetailView } from "@/components/orders/order-detail-view";
-import { getOrder } from "@/actions";
+import { getOrder, getOrderWeekClosed } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
 import { formatLocalizedDate } from "@/lib/format";
 import { notFound } from "next/navigation";
@@ -11,7 +11,7 @@ interface OrderDetailPageProps {
 
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
   const { id } = await params;
-  const order = await getOrder(id);
+  const [order, weekClosed] = await Promise.all([getOrder(id), getOrderWeekClosed(id)]);
   if (!order) notFound();
 
   const { locale } = await getServerI18n();
@@ -22,7 +22,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
         title={order.restaurant.name}
         description={formatLocalizedDate(order.date, locale)}
       />
-      <OrderDetailView order={order} />
+      <OrderDetailView order={order} readOnly={weekClosed} />
     </PageTransition>
   );
 }

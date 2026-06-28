@@ -111,7 +111,7 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
         </div>
 
         {restaurants.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("settings.restaurantRequired")}</p>
+          <p className="text-sm text-muted-foreground">{t("settings.restaurantsEmpty")}</p>
         ) : (
           <div className="divide-y rounded-xl border">
             {restaurants.map((r) => (

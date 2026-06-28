@@ -35,6 +35,10 @@ export const dictionary = {
     avgFood: "میانگین غذا",
     error: "خطایی رخ داد",
   },
+  meta: {
+    title: "ZLab ناهار | مدیریت هزینه گروهی",
+    description: "سیستم هوشمند هزینه و تسویه ناهار گروهی برای آزمایشگاه‌ها",
+  },
   nav: {
     dashboard: "داشبورد",
     newOrder: "ثبت سفارش",
@@ -126,6 +130,9 @@ export const dictionary = {
     submit: "ثبت سفارش",
     saveChanges: "ذخیره تغییرات",
     submitting: "در حال ثبت...",
+    notes: "یادداشت",
+    notesPlaceholder: "توضیح اختیاری (مثلاً بدون پیاز)",
+    reviewEmpty: "اطلاعات سفارش ناقص است — به مراحل قبل برگردید",
   },
   members: {
     title: "اعضا",
@@ -157,6 +164,8 @@ export const dictionary = {
     topRestaurant: "محبوب‌ترین رستوران",
     dailyChart: "نمودار هزینه روزانه",
     weeklyChart: "نمودار هزینه هفتگی",
+    scopeAllTime: "کل دوره",
+    scopeThisWeek: "هفته جاری",
   },
   settlement: {
     title: "تسویه هفتگی",
@@ -195,6 +204,12 @@ export const dictionary = {
     pendingWeekBanner: "هفته قبل هنوز بسته نشده — برای آرشیو، آن را ببندید.",
     closedBadge: "آرشیو شده",
     currentWeekBadge: "هفته جاری",
+    balancesTitle: "تراز اعضا (هفته جاری)",
+    share: "اشتراک تسویه",
+    shareCopied: "متن تسویه کپی شد",
+    shareError: "اشتراک‌گذاری ناموفق بود",
+    unpaidWarning: "{count} انتقال هنوز پرداخت نشده — قبل از بستن هفته بررسی کنید",
+    closeDescUnpaid: "هنوز {count} پرداخت ثبت نشده. با بستن هفته، آرشیو می‌شود ولی وضعیت پرداخت‌ها حفظ می‌شود. ادامه می‌دهید؟",
   },
   archive: {
     title: "آرشیو هفته‌ها",
@@ -231,6 +246,7 @@ export const dictionary = {
     restaurantDeleteDesc: "آیا از حذف «{name}» مطمئن هستید؟",
     restaurantDeleteSuccess: "رستوران حذف شد",
     restaurantUpdateSuccess: "رستوران به‌روز شد",
+    restaurantsEmpty: "هنوز رستورانی ثبت نشده",
     defaultLabel: "پیش‌فرض",
   },
   days: {

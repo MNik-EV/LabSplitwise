@@ -134,6 +134,8 @@ export async function updateOrder(data: unknown) {
   const orderDate = parseDateInput(parsed.date);
   if (!orderDate) throw new ActionError("validation.dateRequired");
 
+  await assertWeekOpen(orderDate, settings.weekStartDay);
+
   const calc = calculateOrder({
     members: parsed.members,
     sharedExpenses: parsed.sharedExpenses,

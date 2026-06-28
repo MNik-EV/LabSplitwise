@@ -67,7 +67,7 @@ export function OrderCard({ order, readOnly = false }: OrderCardProps) {
             {!readOnly && (
               <>
                 <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <Link href={`/orders/${order.id}/edit`}>
+                  <Link href={`/orders/${order.id}/edit`} aria-label={t("common.edit")}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Link>
                 </Button>
@@ -85,7 +85,7 @@ export function OrderCard({ order, readOnly = false }: OrderCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+              className="h-8 w-8 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100"
               asChild
             >
               <Link href={`/orders/${order.id}`}>
