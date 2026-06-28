@@ -1,22 +1,17 @@
 "use client";
 
-import { useTransition, useMemo, useEffect } from "react";
+import { useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  Calendar,
   Store,
   CreditCard,
-  Users,
-  Receipt,
   Plus,
   Trash2,
-  ChevronRight,
-  ChevronLeft,
   Check,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +19,7 @@ import { LocaleDatePicker } from "@/components/shared/locale-date-picker";
 import { FormError } from "@/components/shared/form-error";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -37,9 +32,10 @@ import { buildValidationSchemas, type CreateOrderInput } from "@/lib/validations
 import { toDateInputValue } from "@/lib/date-input";
 import { toastActionError } from "@/lib/action-error-toast";
 import { calculateOrder } from "@/lib/calculations";
+import { fieldLimits } from "@/lib/field-limits";
 import { createOrder, updateOrder } from "@/actions";
-import { useOrderFormStore } from "@/stores/app-store";
 import { useI18n } from "@/components/layout/i18n-provider";
+import { cn } from "@/lib/utils";
 
 interface OrderFormProps {
   users: { id: string; name: string }[];
@@ -48,13 +44,6 @@ interface OrderFormProps {
   defaultValues?: Partial<CreateOrderInput & { id?: string }>;
   mode?: "create" | "edit";
 }
-
-const stepKeys = [
-  { id: 1, key: "orders.stepBasic", icon: Calendar },
-  { id: 2, key: "orders.stepMembers", icon: Users },
-  { id: 3, key: "orders.stepShared", icon: Receipt },
-  { id: 4, key: "orders.stepReview", icon: Check },
-] as const;
 
 export function OrderForm({
   users,
@@ -65,11 +54,7 @@ export function OrderForm({
 }: OrderFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const { step, setStep, reset: resetStep } = useOrderFormStore();
-  const { t, formatMoney, dir, dict } = useI18n();
-  const isRtl = dir === "rtl";
-  const PrevChevron = isRtl ? ChevronRight : ChevronLeft;
-  const NextChevron = isRtl ? ChevronLeft : ChevronRight;
+  const { t, formatMoney, dict } = useI18n();
 
   const orderSchema = useMemo(
     () => buildValidationSchemas(dict.validation).createOrderSchema,
@@ -91,10 +76,6 @@ export function OrderForm({
     mode: "onSubmit",
   });
 
-  useEffect(() => {
-    if (mode === "create") resetStep();
-  }, [mode, resetStep]);
-
   const { fields: memberFields, append: appendMember, remove: removeMember } =
     useFieldArray({ control: form.control, name: "members" });
 
@@ -105,13 +86,16 @@ export function OrderForm({
   } = useFieldArray({ control: form.control, name: "sharedExpenses" });
 
   const watchedValues = form.watch();
+  const { errors } = form.formState;
 
   const calculation = useMemo(() => {
     if (watchedValues.members.length === 0) return null;
     try {
       return calculateOrder({
         members: watchedValues.members.filter((m) => m.userId),
-        sharedExpenses: watchedValues.sharedExpenses ?? [],
+        sharedExpenses: (watchedValues.sharedExpenses ?? []).filter(
+          (e) => e.name?.trim() && e.amount > 0,
+        ),
         labPerPerson: watchedValues.labPerPerson ?? labPerPerson,
       });
     } catch {
@@ -125,58 +109,25 @@ export function OrderForm({
     else appendMember({ userId, foodPrice: 0 });
   };
 
-  const nextStep = async () => {
-    if (step === 1) {
-      const valid = await form.trigger(["date", "restaurantId", "payerId", "labPerPerson"]);
-      if (!valid) {
-        toast.error(t("orders.fixErrors"));
-        return;
-      }
-    } else if (step === 2) {
-      if (memberFields.length === 0) {
-        toast.error(t("orders.minMember"));
-        return;
-      }
-      const members = form.getValues("members");
-      if (members.some((m) => !m.foodPrice || m.foodPrice <= 0)) {
-        toast.error(t("orders.foodPriceRequired"));
-        await form.trigger("members");
-        return;
-      }
-      const valid = await form.trigger("members");
-      if (!valid) {
-        toast.error(t("orders.fixErrors"));
-        return;
-      }
-    } else if (step === 3) {
-      const expenses = form.getValues("sharedExpenses") ?? [];
-      const hasRows = expenses.length > 0;
-      const hasIncomplete = expenses.some(
-        (e) => !e.name?.trim() || e.amount === undefined || e.amount <= 0,
-      );
-      if (hasRows && hasIncomplete) {
-        const valid = await form.trigger("sharedExpenses");
-        if (!valid) toast.error(t("orders.expenseIncomplete"));
-        return;
-      }
-    }
-
-    setStep(step + 1);
-  };
-
-  const { errors } = form.formState;
+  const getUserName = (id: string) => users.find((u) => u.id === id)?.name ?? "";
 
   const onSubmit = (data: CreateOrderInput) => {
+    const payload = {
+      ...data,
+      sharedExpenses: (data.sharedExpenses ?? []).filter(
+        (e) => e.name?.trim() && e.amount > 0,
+      ),
+    };
+
     startTransition(async () => {
       try {
         if (mode === "edit" && defaultValues?.id) {
-          await updateOrder({ ...data, id: defaultValues.id });
+          await updateOrder({ ...payload, id: defaultValues.id });
           toast.success(t("orders.updateSuccess"));
         } else {
-          await createOrder(data);
+          await createOrder(payload);
           toast.success(t("orders.createSuccess"));
         }
-        resetStep();
         router.push("/orders");
         router.refresh();
       } catch (error) {
@@ -185,377 +136,329 @@ export function OrderForm({
     });
   };
 
-  const getUserName = (id: string) => users.find((u) => u.id === id)?.name ?? "";
-  const getRestaurantName = (id: string) =>
-    restaurants.find((r) => r.id === id)?.name ?? "";
+  const payerOutOfPocket =
+    calculation && watchedValues.payerId
+      ? calculation.totalAmount -
+        calculation.labTotalAmount
+      : null;
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-8 flex items-center justify-between">
-        {stepKeys.map((s, i) => {
-          const Icon = s.icon;
-          const isActive = step === s.id;
-          const isDone = step > s.id;
-          return (
-            <div key={s.id} className="flex items-center">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : isDone
-                      ? "bg-success/10 text-success"
-                      : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {isDone ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-              </div>
-              {i < stepKeys.length - 1 && (
-                <div
-                  className={`mx-2 hidden h-0.5 w-8 sm:block md:w-16 ${
-                    isDone ? "bg-success" : "bg-muted"
-                  }`}
-                />
-              )}
+    <form
+      onSubmit={form.handleSubmit(onSubmit, () => toast.error(t("orders.fixErrors")))}
+      className="mx-auto max-w-6xl"
+    >
+      <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
+        <Card className="lg:col-span-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">{t("orders.stepBasic")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0">
+            <div className="space-y-1.5">
+              <Label htmlFor="date" className="text-xs">
+                {t("orders.date")}
+              </Label>
+              <LocaleDatePicker
+                id="date"
+                value={form.watch("date")}
+                onChange={(v) =>
+                  form.setValue("date", v, { shouldValidate: true, shouldDirty: true })
+                }
+              />
+              <FormError message={errors.date?.message} />
             </div>
-          );
-        })}
-      </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
-            >
-              <Card>
-                <CardContent className="space-y-4 p-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="date">{t("orders.date")}</Label>
-                    <LocaleDatePicker
-                      id="date"
-                      value={form.watch("date")}
-                      onChange={(v) =>
-                        form.setValue("date", v, { shouldValidate: true, shouldDirty: true })
-                      }
-                    />
-                    <FormError message={errors.date?.message} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("orders.restaurant")}</Label>
-                    <Controller
-                      control={form.control}
-                      name="restaurantId"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={(v) => {
-                            field.onChange(v);
-                            form.clearErrors("restaurantId");
-                          }}
-                        >
-                          <SelectTrigger
-                            className={errors.restaurantId ? "border-destructive ring-destructive/30" : ""}
-                          >
-                            <Store className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder={t("orders.selectRestaurant")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {restaurants.map((r) => (
-                              <SelectItem key={r.id} value={r.id}>
-                                {r.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    <FormError message={errors.restaurantId?.message} />
-                    <p className="text-xs text-muted-foreground">{t("orders.restaurantHint")}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("common.payer")}</Label>
-                    <Controller
-                      control={form.control}
-                      name="payerId"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={(v) => {
-                            field.onChange(v);
-                            form.clearErrors("payerId");
-                          }}
-                        >
-                          <SelectTrigger
-                            className={errors.payerId ? "border-destructive ring-destructive/30" : ""}
-                          >
-                            <CreditCard className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder={t("orders.selectPayer")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {users.map((u) => (
-                              <SelectItem key={u.id} value={u.id}>
-                                {u.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    <FormError message={errors.payerId?.message} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="labPerPerson">{t("orders.labField")}</Label>
-                    <Input
-                      id="labPerPerson"
-                      type="number"
-                      className={errors.labPerPerson ? "border-destructive" : ""}
-                      {...form.register("labPerPerson")}
-                    />
-                    <FormError message={errors.labPerPerson?.message} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="order-notes">{t("orders.notes")}</Label>
-                    <Textarea
-                      id="order-notes"
-                      placeholder={t("orders.notesPlaceholder")}
-                      rows={2}
-                      {...form.register("notes")}
-                    />
-                    <p className="text-xs text-muted-foreground">{t("orders.notesHint")}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("orders.restaurant")}</Label>
+                <Controller
+                  control={form.control}
+                  name="restaurantId"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(v) => {
+                        field.onChange(v);
+                        form.clearErrors("restaurantId");
+                      }}
+                    >
+                      <SelectTrigger
+                        className={cn("h-9", errors.restaurantId && "border-destructive")}
+                      >
+                        <Store className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <SelectValue placeholder={t("orders.selectRestaurant")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {restaurants.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FormError message={errors.restaurantId?.message} />
+              </div>
 
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
-            >
-              <p className="text-sm text-muted-foreground">{t("orders.selectMembers")}</p>
-              <FormError message={errors.members?.message ?? errors.members?.root?.message} />
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("common.payer")}</Label>
+                <Controller
+                  control={form.control}
+                  name="payerId"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(v) => {
+                        field.onChange(v);
+                        form.clearErrors("payerId");
+                      }}
+                    >
+                      <SelectTrigger
+                        className={cn("h-9", errors.payerId && "border-destructive")}
+                      >
+                        <CreditCard className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <SelectValue placeholder={t("orders.selectPayer")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map((u) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FormError message={errors.payerId?.message} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="labPerPerson" className="text-xs">
+                {t("orders.labField")}
+              </Label>
+              <Input
+                id="labPerPerson"
+                type="number"
+                className={cn("h-9", errors.labPerPerson && "border-destructive")}
+                {...form.register("labPerPerson")}
+              />
+              <FormError message={errors.labPerPerson?.message} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="order-notes" className="text-xs">
+                {t("orders.notes")}
+              </Label>
+              <Textarea
+                id="order-notes"
+                placeholder={t("orders.notesPlaceholder")}
+                rows={2}
+                maxLength={fieldLimits.orderNotes}
+                className="resize-none text-sm"
+                {...form.register("notes")}
+              />
+              <FormError message={errors.notes?.message} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-8">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">{t("orders.members")}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <FormError message={errors.members?.message ?? errors.members?.root?.message} />
+            <div className="grid gap-2 sm:grid-cols-2">
               {users.map((user) => {
                 const memberIndex = memberFields.findIndex((m) => m.userId === user.id);
                 const isSelected = memberIndex >= 0;
                 const memberError = errors.members?.[memberIndex]?.foodPrice;
+
                 return (
-                  <Card
+                  <div
                     key={user.id}
-                    className={`cursor-pointer transition-all ${
-                      isSelected ? "border-primary ring-1 ring-primary" : ""
-                    }`}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => !isSelected && toggleMember(user.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        if (!isSelected) toggleMember(user.id);
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors",
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "hover:border-muted-foreground/30",
+                    )}
                   >
-                    <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:gap-4">
-                      <div className="flex flex-1 items-center gap-4">
-                        <div
-                          className={`flex h-5 w-5 items-center justify-center rounded-md border ${
-                            isSelected
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : ""
-                          }`}
-                        >
-                          {isSelected && <Check className="h-3 w-3" />}
-                        </div>
-                        <span className="flex-1 font-medium">{user.name}</span>
-                      </div>
-                      {isSelected && (
-                        <div className="w-full sm:w-36">
-                          <Input
-                            type="number"
-                            placeholder={t("orders.foodPrice")}
-                            className={memberError ? "border-destructive" : ""}
-                            {...form.register(`members.${memberIndex}.foodPrice`, {
-                              valueAsNumber: true,
-                            })}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <FormError message={memberError?.message} />
-                        </div>
+                    <div
+                      className={cn(
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                        isSelected && "border-primary bg-primary text-primary-foreground",
                       )}
-                    </CardContent>
-                  </Card>
+                    >
+                      {isSelected && <Check className="h-2.5 w-2.5" />}
+                    </div>
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {user.name}
+                    </span>
+                    {isSelected && (
+                      <Input
+                        type="number"
+                        placeholder={t("orders.foodPrice")}
+                        className={cn(
+                          "h-8 w-24 shrink-0 text-sm",
+                          memberError && "border-destructive",
+                        )}
+                        {...form.register(`members.${memberIndex}.foodPrice`, {
+                          valueAsNumber: true,
+                        })}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    )}
+                  </div>
                 );
               })}
-            </motion.div>
-          )}
+            </div>
+          </CardContent>
+        </Card>
 
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
-            >
-              <p className="text-sm text-muted-foreground">{t("orders.sharedExpensesDesc")}</p>
-              {expenseFields.map((field, index) => {
+        <Card className="lg:col-span-7">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">{t("orders.sharedExpenses")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 p-4 pt-0">
+            {expenseFields.length === 0 ? (
+              <p className="text-xs text-muted-foreground">{t("orders.sharedExpensesDesc")}</p>
+            ) : (
+              expenseFields.map((field, index) => {
                 const nameError = errors.sharedExpenses?.[index]?.name;
                 const amountError = errors.sharedExpenses?.[index]?.amount;
                 return (
-                  <Card key={field.id}>
-                    <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:gap-3">
-                      <div className="flex-1 space-y-1">
-                        <Input
-                          placeholder={t("orders.expenseName")}
-                          className={nameError ? "border-destructive" : ""}
-                          {...form.register(`sharedExpenses.${index}.name`)}
-                        />
-                        <FormError message={nameError?.message} />
-                      </div>
-                      <div className="w-full space-y-1 sm:w-32">
-                        <Input
-                          type="number"
-                          placeholder={t("orders.amount")}
-                          className={amountError ? "border-destructive" : ""}
-                          {...form.register(`sharedExpenses.${index}.amount`, {
-                            valueAsNumber: true,
-                          })}
-                        />
-                        <FormError message={amountError?.message} />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="self-end sm:self-start"
-                        onClick={() => removeExpense(index)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div key={field.id} className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <Input
+                        placeholder={t("orders.expenseName")}
+                        maxLength={fieldLimits.expenseName}
+                        className={cn("h-9 text-sm", nameError && "border-destructive")}
+                        {...form.register(`sharedExpenses.${index}.name`)}
+                      />
+                      <FormError message={nameError?.message} />
+                    </div>
+                    <div className="w-24 space-y-0.5">
+                      <Input
+                        type="number"
+                        placeholder={t("orders.amount")}
+                        className={cn("h-9 text-sm", amountError && "border-destructive")}
+                        {...form.register(`sharedExpenses.${index}.amount`, {
+                          valueAsNumber: true,
+                        })}
+                      />
+                      <FormError message={amountError?.message} />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 shrink-0"
+                      onClick={() => removeExpense(index)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 );
-              })}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => appendExpense({ name: "", amount: 0 })}
-              >
-                <Plus className="h-4 w-4" />
-                {t("orders.addShared")}
-              </Button>
-            </motion.div>
-          )}
-
-          {step === 4 && !calculation && (
-            <motion.div
-              key="step4-empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="rounded-xl border border-dashed p-8 text-center text-muted-foreground"
+              })
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => appendExpense({ name: "", amount: 0 })}
             >
-              {t("orders.reviewEmpty")}
-            </motion.div>
-          )}
+              <Plus className="h-3.5 w-3.5" />
+              {t("orders.addShared")}
+            </Button>
+          </CardContent>
+        </Card>
 
-          {step === 4 && calculation && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
-            >
-              <Card>
-                <CardContent className="space-y-4 p-6">
+        <Card className="lg:col-span-5 lg:sticky lg:top-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">{t("orders.summary")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0">
+            {!calculation ? (
+              <p className="text-sm text-muted-foreground">{t("orders.summaryEmpty")}</p>
+            ) : (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t("common.total")}</span>
+                  <span className="font-bold text-primary">
+                    {formatMoney(calculation.totalAmount)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm text-success">
+                  <span className="flex items-center gap-1">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {t("orders.labShare")}
+                  </span>
+                  <span>{formatMoney(calculation.labTotalAmount)}</span>
+                </div>
+                {payerOutOfPocket !== null && watchedValues.payerId && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t("orders.restaurant")}</span>
-                    <span className="font-medium">
-                      {getRestaurantName(watchedValues.restaurantId)}
-                    </span>
+                    <span className="text-muted-foreground">{t("orders.payerOutOfPocket")}</span>
+                    <span className="font-medium">{formatMoney(payerOutOfPocket)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t("common.payer")}</span>
-                    <span className="font-medium">
-                      {getUserName(watchedValues.payerId)}
-                    </span>
-                  </div>
-                  <Separator />
+                )}
+                <Separator />
+                <div className="max-h-32 space-y-1 overflow-y-auto text-xs">
                   {calculation.members.map((m) => {
                     const isPayer = m.userId === watchedValues.payerId;
-                    const payerName = getUserName(watchedValues.payerId);
                     return (
-                      <div key={m.userId} className="flex justify-between text-sm">
-                        <span>{getUserName(m.userId)}</span>
-                        <div className="text-end">
-                          <span className="font-medium">{formatMoney(m.shareAmount)}</span>
-                          {isPayer ? (
-                            <span className="ms-2 text-xs text-muted-foreground">
-                              ({t("orders.ownShare")}: {formatMoney(m.pocketAmount)})
-                            </span>
-                          ) : m.pocketAmount > 0 ? (
-                            <span className="ms-2 text-xs text-muted-foreground">
-                              ({t("orders.owesPayerShort", {
-                                payer: payerName,
-                                amount: formatMoney(m.pocketAmount),
-                              })})
-                            </span>
-                          ) : null}
-                        </div>
+                      <div key={m.userId} className="flex justify-between gap-2">
+                        <span className="truncate">{getUserName(m.userId)}</span>
+                        <span className="shrink-0 font-medium">
+                          {formatMoney(m.shareAmount)}
+                          {isPayer
+                            ? ` · ${t("orders.ownShareShort")}`
+                            : m.pocketAmount > 0
+                              ? ` → ${formatMoney(m.pocketAmount)}`
+                              : ""}
+                        </span>
                       </div>
                     );
                   })}
-                  <Separator />
-                  <div className="flex justify-between font-bold">
-                    <span>{t("common.total")}</span>
-                    <span className="text-primary">
-                      {formatMoney(calculation.totalAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm text-success">
-                    <span>{t("orders.labShare")}</span>
-                    <span>{formatMoney(calculation.labTotalAmount)}</span>
-                  </div>
-                  {watchedValues.notes?.trim() && (
-                    <>
-                      <Separator />
-                      <div className="text-sm">
-                        <p className="text-muted-foreground">{t("orders.notes")}</p>
-                        <p className="mt-1 whitespace-pre-wrap">{watchedValues.notes}</p>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+              </>
+            )}
 
-        <div className="mt-8 flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => (step > 1 ? setStep(step - 1) : router.back())}
-          >
-            <PrevChevron className="h-4 w-4" />
-            {step === 1 ? t("common.cancel") : t("common.back")}
-          </Button>
-          {step < 4 ? (
-            <Button type="button" onClick={nextStep}>
-              {t("common.next")}
-              <NextChevron className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button type="submit" disabled={isPending || !calculation}>
-              {isPending
-                ? t("orders.submitting")
-                : mode === "edit"
-                  ? t("orders.saveChanges")
-                  : t("orders.submit")}
-            </Button>
-          )}
-        </div>
-      </form>
-    </div>
+            <div className="flex gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => router.back()}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1"
+                disabled={isPending || !calculation || memberFields.length === 0}
+              >
+                {isPending
+                  ? t("orders.submitting")
+                  : mode === "edit"
+                    ? t("orders.saveChanges")
+                    : t("orders.submit")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </form>
   );
 }

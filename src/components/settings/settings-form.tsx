@@ -20,8 +20,9 @@ import { updateSettings } from "@/actions";
 import { toastActionError } from "@/lib/action-error-toast";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { useI18n } from "@/components/layout/i18n-provider";
+import { fieldLimits } from "@/lib/field-limits";
 import { appDefaults } from "@/config/defaults";
+import { useI18n } from "@/components/layout/i18n-provider";
 
 interface SettingsFormProps {
   settings: {
@@ -86,7 +87,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="labName">{t("settings.labName")}</Label>
-            <Input id="labName" {...form.register("labName")} />
+            <Input id="labName" maxLength={fieldLimits.labName} {...form.register("labName")} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="labPerPerson">{t("settings.labPerPerson")}</Label>

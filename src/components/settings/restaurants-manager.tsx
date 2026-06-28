@@ -21,6 +21,7 @@ import {
 import { createRestaurant, updateRestaurant, deleteRestaurant } from "@/actions";
 import { toastActionError } from "@/lib/action-error-toast";
 import { useRouter } from "next/navigation";
+import { fieldLimits } from "@/lib/field-limits";
 import { useI18n } from "@/components/layout/i18n-provider";
 
 interface RestaurantsManagerProps {
@@ -100,6 +101,7 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
         <div className="flex gap-2">
           <Input
             placeholder={t("settings.newRestaurant")}
+            maxLength={fieldLimits.restaurantName}
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -123,7 +125,11 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
                   <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
                     <div className="flex-1 space-y-1.5">
                       <Label>{t("settings.newRestaurant")}</Label>
-                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                      <Input
+                        maxLength={fieldLimits.restaurantName}
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                      />
                     </div>
                     <div className="flex gap-2">
                       <Button size="icon" onClick={() => handleUpdate(r.id)} disabled={isPending}>

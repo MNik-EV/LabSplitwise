@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeCardNumber } from "./card-number";
+import { fieldLimits } from "./field-limits";
 import type { Dictionary } from "@/i18n/index";
 
 function cardNumberField(message: string) {
@@ -16,11 +17,14 @@ function cardNumberField(message: string) {
 export function buildValidationSchemas(v: Dictionary["validation"]) {
   const orderMemberSchema = z.object({
     userId: z.string().min(1, v.memberRequired),
-    foodPrice: z.coerce.number().min(0, v.foodPricePositive),
+    foodPrice: z.coerce.number().min(1, v.foodPricePositive),
   });
 
   const sharedExpenseSchema = z.object({
-    name: z.string().min(1, v.expenseNameRequired),
+    name: z
+      .string()
+      .min(1, v.expenseNameRequired)
+      .max(fieldLimits.expenseName, v.expenseNameMax),
     amount: z.coerce.number().min(0, v.amountPositive),
   });
 
@@ -31,7 +35,7 @@ export function buildValidationSchemas(v: Dictionary["validation"]) {
     members: z.array(orderMemberSchema).min(1, v.minMembers),
     sharedExpenses: z.array(sharedExpenseSchema).default([]),
     labPerPerson: z.coerce.number().min(0).default(350),
-    notes: z.string().optional(),
+    notes: z.string().max(fieldLimits.orderNotes, v.notesMax).optional(),
   });
 
   return {
@@ -40,24 +44,39 @@ export function buildValidationSchemas(v: Dictionary["validation"]) {
     createOrderSchema,
     updateOrderSchema: createOrderSchema.extend({ id: z.string().min(1) }),
     createUserSchema: z.object({
-      name: z.string().min(2, v.nameMin),
+      name: z
+        .string()
+        .min(2, v.nameMin)
+        .max(fieldLimits.memberName, v.nameMax),
       cardNumber: cardNumberField(v.cardInvalid),
     }),
     updateUserSchema: z.object({
       id: z.string().min(1),
-      name: z.string().min(2, v.nameMin),
+      name: z
+        .string()
+        .min(2, v.nameMin)
+        .max(fieldLimits.memberName, v.nameMax),
       cardNumber: cardNumberField(v.cardInvalid),
     }),
     createRestaurantSchema: z.object({
-      name: z.string().min(2, v.restaurantNameMin),
+      name: z
+        .string()
+        .min(2, v.restaurantNameMin)
+        .max(fieldLimits.restaurantName, v.restaurantNameMax),
     }),
     updateRestaurantSchema: z.object({
       id: z.string().min(1),
-      name: z.string().min(2, v.restaurantNameMin),
+      name: z
+        .string()
+        .min(2, v.restaurantNameMin)
+        .max(fieldLimits.restaurantName, v.restaurantNameMax),
     }),
     updateSettingsSchema: z.object({
       labPerPerson: z.coerce.number().min(0),
-      labName: z.string().min(1),
+      labName: z
+        .string()
+        .min(1)
+        .max(fieldLimits.labName, v.labNameMax),
       defaultLocale: z.enum(["fa", "en"]),
       weekStartDay: z.coerce.number().min(0).max(6),
     }),

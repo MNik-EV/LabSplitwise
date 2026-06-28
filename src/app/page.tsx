@@ -8,7 +8,7 @@ import { StatisticsCard } from "@/components/dashboard/statistics-card";
 import { DailyExpenseChart } from "@/components/dashboard/dashboard-charts";
 import { OrderCard } from "@/components/orders/order-card";
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
-import { getDashboardStats, getSettings, getReports } from "@/actions";
+import { getDashboardStats, getSettings } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
 import { formatLocalizedDate, getInitials, getAvatarColor } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,6 @@ export default async function DashboardPage() {
   const { t, locale, formatMoney } = await getServerI18n();
   const settings = await getSettings();
   const stats = await getDashboardStats(settings.weekStartDay);
-  const reports = await getReports();
 
   return (
     <PageTransition>
@@ -66,9 +65,9 @@ export default async function DashboardPage() {
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href="/members">
+              <Link href="/stats">
                 <BarChart3 className="h-4 w-4" />
-                {t("nav.members")}
+                {t("nav.stats")}
               </Link>
             </Button>
           </CardContent>
@@ -132,26 +131,6 @@ export default async function DashboardPage() {
               )}
             </CardContent>
           </Card>
-
-          {reports.topRestaurant && (
-            <Card className="mt-4">
-              <CardContent className="p-4">
-                <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-                  {t("dashboard.stats")}
-                </h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">{t("dashboard.topRestaurant")}</p>
-                    <p className="font-medium">{reports.topRestaurant.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">{t("dashboard.avgFoodPrice")}</p>
-                    <p className="font-medium">{formatMoney(reports.avgFoodPrice)}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </PageTransition>

@@ -22,6 +22,7 @@ import {
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
 import { createUser, updateUser, deleteUser } from "@/actions";
 import { formatCardNumber, isValidCardNumber, normalizeCardNumber } from "@/lib/card-number";
+import { fieldLimits } from "@/lib/field-limits";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/layout/i18n-provider";
 
@@ -146,6 +147,7 @@ export function MembersSettings({ members }: MembersSettingsProps) {
               <Input
                 id="new-member-name"
                 placeholder={t("members.namePlaceholder")}
+                maxLength={fieldLimits.memberName}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -183,7 +185,11 @@ export function MembersSettings({ members }: MembersSettingsProps) {
                     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
                       <div className="flex-1 space-y-1.5">
                         <Label>{t("members.namePlaceholder")}</Label>
-                        <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                        <Input
+                          maxLength={fieldLimits.memberName}
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                        />
                       </div>
                       <div className="flex-1 space-y-1.5">
                         <Label>{t("members.cardNumber")}</Label>

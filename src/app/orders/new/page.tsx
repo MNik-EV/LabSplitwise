@@ -17,7 +17,7 @@ export default async function NewOrderPage() {
 
   return (
     <PageTransition>
-      <PageHeader title={t("orders.newTitle")} description={t("orders.newDesc")} />
+      <PageHeader title={t("orders.newTitle")} />
       <OrderForm
         users={users}
         restaurants={restaurants}

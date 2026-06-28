@@ -3,6 +3,7 @@ const NAV_HREFS = [
   "/orders/new",
   "/orders",
   "/members",
+  "/stats",
   "/settlement",
   "/archive",
   "/settings",
