@@ -267,7 +267,6 @@ export async function getDashboardStats(weekStartDay = 6) {
     (sum, o) => sum + o.members.reduce((s, m) => s + m.pocketAmount, 0),
     0,
   );
-  const remainingBalance = totalExpenses - labContribution - memberPaid;
 
   const memberActivity = new Map<
     string,
@@ -309,7 +308,6 @@ export async function getDashboardStats(weekStartDay = 6) {
     totalOrders,
     labContribution,
     memberPaid,
-    remainingBalance,
     recentOrders: orders.slice(0, 5),
     activeMembers,
     chartData,

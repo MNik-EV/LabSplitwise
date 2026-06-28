@@ -37,12 +37,11 @@ export default async function DashboardPage() {
         }
       />
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
         <StatisticsCard title={t("dashboard.totalWeek")} value={stats.totalExpenses} icon="wallet" variant="primary" />
         <StatisticsCard title={t("dashboard.orderCount")} value={stats.totalOrders} icon="shopping" isCurrency={false} />
         <StatisticsCard title={t("dashboard.labPayment")} value={stats.labContribution} icon="building" variant="success" />
         <StatisticsCard title={t("dashboard.memberPaid")} value={stats.memberPaid} icon="handcoins" variant="warning" />
-        <StatisticsCard title={t("dashboard.remaining")} value={stats.remainingBalance} icon="scale" variant="danger" />
       </div>
 
       <div className="mb-8 grid gap-6 lg:grid-cols-3">

@@ -3,9 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getInitials, getAvatarColor } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
 import { PaymentToggle } from "@/components/settlement/payment-toggle";
@@ -36,11 +34,6 @@ function PersonBlock({
 }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-2 text-center">
-      <Avatar className={cn("h-14 w-14", getAvatarColor(name))}>
-        <AvatarFallback className="bg-transparent text-lg text-white">
-          {getInitials(name)}
-        </AvatarFallback>
-      </Avatar>
       <p className="text-lg font-bold">{name}</p>
       <Badge variant={roleVariant === "destructive" ? "destructive" : "success"}>
         {role}

@@ -60,7 +60,6 @@ export const dictionary = {
     orderCount: "تعداد سفارش‌ها",
     labPayment: "پرداخت آزمایشگاه",
     memberPaid: "پرداخت اعضا",
-    remaining: "مانده قابل تسویه",
     dailyChart: "هزینه روزانه",
     weeklyChart: "روند هفتگی",
     quickActions: "عملیات سریع",

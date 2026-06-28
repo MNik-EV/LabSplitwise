@@ -60,7 +60,6 @@ export const dictionary = {
     orderCount: "Orders",
     labPayment: "Lab contribution",
     memberPaid: "Member payments",
-    remaining: "Remaining balance",
     dailyChart: "Daily expenses",
     weeklyChart: "Weekly trend",
     quickActions: "Quick actions",
