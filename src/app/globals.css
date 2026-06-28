@@ -86,4 +86,26 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .dvx-pdp--fullwidth {
+    display: block;
+    width: 100%;
+    --dvx-pdp-accent: hsl(var(--primary));
+    --dvx-pdp-accentFg: hsl(var(--primary-foreground));
+    --dvx-pdp-ring: hsl(var(--primary) / 0.3);
+    --dvx-pdp-dayHover: hsl(var(--primary) / 0.08);
+    --dvx-pdp-bg: hsl(var(--background));
+    --dvx-pdp-fg: hsl(var(--foreground));
+    --dvx-pdp-muted: hsl(var(--muted-foreground));
+    --dvx-pdp-border: hsl(var(--border));
+  }
+
+  .dvx-pdp--fullwidth .dvx-pdp__control {
+    width: 100%;
+  }
+
+  .dvx-pdp--fullwidth .dvx-pdp__input {
+    flex: 1;
+    min-width: 0;
+  }
 }

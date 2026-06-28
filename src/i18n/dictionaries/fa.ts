@@ -89,6 +89,7 @@ export const dictionary = {
     createError: "خطا در ثبت سفارش",
     restaurant: "رستوران",
     date: "تاریخ",
+    datePlaceholder: "مثلاً ۱۴۰۴/۰۴/۰۷",
     members: "اعضای حاضر",
     sharedExpenses: "هزینه‌های مشترک",
     summary: "خلاصه مالی",

@@ -3,13 +3,12 @@ import { SettlementCard } from "@/components/settlement/settlement-card";
 import { WeeklySummary } from "@/components/settlement/weekly-summary";
 import { SettlementActions } from "@/components/settlement/settlement-actions";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getWeeklySettlement, getSettings } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
 import { formatLocalizedDate } from "@/lib/format";
 
 export default async function SettlementPage() {
-  const { t, locale, formatMoney } = await getServerI18n();
+  const { t, locale } = await getServerI18n();
   const settings = await getSettings();
   const settlement = await getWeeklySettlement(settings.weekStartDay);
 

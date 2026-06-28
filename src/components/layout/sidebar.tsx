@@ -21,6 +21,7 @@ import { useAppStore } from "@/stores/app-store";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { isNavActive } from "@/lib/navigation";
+import { useI18n } from "@/components/layout/i18n-provider";
 
 const navKeys = [
   { href: "/", key: "nav.dashboard", icon: LayoutDashboard },

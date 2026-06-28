@@ -89,6 +89,7 @@ export const dictionary = {
     createError: "Failed to save order",
     restaurant: "Restaurant",
     date: "Date",
+    datePlaceholder: "Select date",
     members: "Attendees",
     sharedExpenses: "Shared expenses",
     summary: "Financial summary",

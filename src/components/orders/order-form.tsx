@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LocaleDatePicker } from "@/components/shared/locale-date-picker";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -192,7 +193,13 @@ export function OrderForm({
                 <CardContent className="space-y-4 p-6">
                   <div className="space-y-2">
                     <Label htmlFor="date">{t("orders.date")}</Label>
-                    <Input id="date" type="date" {...form.register("date")} />
+                    <LocaleDatePicker
+                      id="date"
+                      value={form.watch("date")}
+                      onChange={(v) =>
+                        form.setValue("date", v, { shouldValidate: true })
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("orders.restaurant")}</Label>
