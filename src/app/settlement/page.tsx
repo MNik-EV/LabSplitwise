@@ -1,16 +1,19 @@
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
-import { SettlementCard } from "@/components/settlement/settlement-card";
-import { WeeklySummary } from "@/components/settlement/weekly-summary";
+import { SettlementView } from "@/components/settlement/settlement-view";
 import { SettlementActions } from "@/components/settlement/settlement-actions";
+import { ClosePendingWeekButton } from "@/components/settlement/close-pending-week-button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getWeeklySettlement, getSettings } from "@/actions";
+import { getWeeklySettlement, getSettings, getPendingPreviousWeek } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
 import { formatLocalizedDate } from "@/lib/format";
 
 export default async function SettlementPage() {
   const { t, locale } = await getServerI18n();
   const settings = await getSettings();
-  const settlement = await getWeeklySettlement(settings.weekStartDay);
+  const [settlement, pendingWeek] = await Promise.all([
+    getWeeklySettlement(settings.weekStartDay),
+    getPendingPreviousWeek(settings.weekStartDay),
+  ]);
 
   return (
     <PageTransition>
@@ -20,70 +23,38 @@ export default async function SettlementPage() {
           start: formatLocalizedDate(settlement.weekStart, locale),
           end: formatLocalizedDate(settlement.weekEnd, locale),
         })}
-        action={<SettlementActions weekStartDay={settings.weekStartDay} />}
+        action={
+          !settlement.isClosed ? (
+            <SettlementActions
+              weekStartDay={settings.weekStartDay}
+              isClosed={settlement.isClosed}
+              totalOrders={settlement.totalOrders}
+            />
+          ) : undefined
+        }
       />
 
-      <WeeklySummary
+      {pendingWeek && (
+        <Card className="mb-6 border-warning/40 bg-warning/5">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">{t("settlement.pendingWeekBanner")}</p>
+            <ClosePendingWeekButton
+              weekKey={pendingWeek.weekKey}
+              weekStartDay={settings.weekStartDay}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      <SettlementView
+        transfers={settlement.transfers}
         totalExpenses={settlement.totalExpenses}
         labContribution={settlement.labContribution}
         totalOrders={settlement.totalOrders}
-        transferCount={settlement.transfers.length}
+        paidCount={settlement.paidCount}
+        totalTransferCount={settlement.totalTransferCount}
+        isClosed={settlement.isClosed}
       />
-
-      <div className="mt-8">
-        <h2 className="mb-4 text-lg font-semibold">
-          {t("settlement.optimalTransfers")}{" "}
-          <span className="text-sm font-normal text-muted-foreground">
-            {t("settlement.minTransactions")}
-          </span>
-        </h2>
-
-        {settlement.transfers.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              {t("settlement.allSettled")}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {settlement.transfers.map((transfer, i) => {
-              const existing = settlement.existingSettlements.find(
-                (s) =>
-                  s.fromUserId === transfer.fromUserId &&
-                  s.toUserId === transfer.toUserId,
-              );
-              return (
-                <SettlementCard
-                  key={`${transfer.fromUserId}-${transfer.toUserId}`}
-                  fromUser={transfer.fromUser}
-                  toUser={transfer.toUser}
-                  amount={transfer.amount}
-                  isPaid={existing?.isPaid}
-                  index={i}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {settlement.existingSettlements.length > 0 && (
-        <div className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold">{t("settlement.savedSettlements")}</h2>
-          <div className="space-y-2">
-            {settlement.existingSettlements.map((s, i) => (
-              <SettlementCard
-                key={s.id}
-                fromUser={s.fromUser}
-                toUser={s.toUser}
-                amount={s.amount}
-                isPaid={s.isPaid}
-                index={i}
-              />
-            ))}
-          </div>
-        </div>
-      )}
     </PageTransition>
   );
 }

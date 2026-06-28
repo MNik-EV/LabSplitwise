@@ -76,32 +76,39 @@ model Expense {
 }
 
 model Settlement {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   amount    Int
   weekStart DateTime
   weekEnd   DateTime
-  isPaid    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPaid    Boolean   @default(false)
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   fromUserId String
   fromUser   User   @relation("SettlementFrom", fields: [fromUserId], references: [id])
 
   toUserId String
   toUser   User   @relation("SettlementTo", fields: [toUserId], references: [id])
+
+  @@unique([weekStart, fromUserId, toUserId])
 }
 
 model WeeklyReport {
-  id              String   @id @default(cuid())
-  weekStart       DateTime @unique
-  weekEnd         DateTime
-  totalExpenses   Int
-  totalOrders     Int
-  labContribution Int
-  memberPaid      Int
+  id               String    @id @default(cuid())
+  weekStart        DateTime  @unique
+  weekEnd          DateTime
+  totalExpenses    Int
+  totalOrders      Int
+  labContribution  Int
+  memberPaid       Int
   remainingBalance Int
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isClosed         Boolean   @default(false)
+  closedAt         DateTime?
+  totalTransfers   Int       @default(0)
+  paidTransfers    Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Settings {

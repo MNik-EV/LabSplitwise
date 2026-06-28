@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   UtensilsCrossed,
+  Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const navKeys = [
   { href: "/orders", key: "nav.orders", icon: ClipboardList },
   { href: "/members", key: "nav.members", icon: Users },
   { href: "/settlement", key: "nav.settlement", icon: ArrowLeftRight },
+  { href: "/archive", key: "nav.archive", icon: Archive },
   { href: "/settings", key: "nav.settings", icon: Settings },
 ] as const;
 

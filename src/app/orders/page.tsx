@@ -1,21 +1,30 @@
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderCard } from "@/components/orders/order-card";
 import { OrdersEmpty } from "@/components/orders/orders-empty";
 import { PageTransition, PageHeader } from "@/components/shared/page-transition";
-import { getOrders } from "@/actions";
+import { Card, CardContent } from "@/components/ui/card";
+import { getOrders, getSettings } from "@/actions";
 import { getServerI18n } from "@/i18n/server";
+import { getWeekRange } from "@/lib/utils";
+import { formatLocalizedDate } from "@/lib/format";
 
 export default async function OrdersPage() {
-  const { t } = await getServerI18n();
-  const orders = await getOrders();
+  const { t, locale } = await getServerI18n();
+  const settings = await getSettings();
+  const { start, end } = getWeekRange(new Date(), settings.weekStartDay);
+  const orders = await getOrders({ weekStart: start, weekEnd: end, currentWeekOnly: false });
 
   return (
     <PageTransition>
       <PageHeader
         title={t("orders.title")}
-        description={t("orders.count", { count: orders.length })}
+        description={t("orders.currentWeekDesc", {
+          start: formatLocalizedDate(start, locale),
+          end: formatLocalizedDate(end, locale),
+          count: orders.length,
+        })}
         action={
           <Button asChild>
             <Link href="/orders/new">
@@ -25,6 +34,18 @@ export default async function OrdersPage() {
           </Button>
         }
       />
+
+      <Card className="mb-6 border-primary/20 bg-primary/5">
+        <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm">{t("orders.currentWeekOnly")}</p>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/archive">
+              <Archive className="h-4 w-4" />
+              {t("nav.archive")}
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {orders.length === 0 ? (
         <OrdersEmpty />

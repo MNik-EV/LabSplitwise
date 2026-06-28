@@ -8,13 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { getInitials, getAvatarColor } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
+import { PaymentToggle } from "@/components/settlement/payment-toggle";
 import { useI18n } from "@/components/layout/i18n-provider";
 
 interface SettlementCardProps {
+  settlementId?: string;
   fromUser: { id: string; name: string; cardNumber?: string | null };
   toUser: { id: string; name: string; cardNumber?: string | null };
   amount: number;
   isPaid?: boolean;
+  readOnly?: boolean;
   index?: number;
 }
 
@@ -53,10 +56,12 @@ function PersonBlock({
 }
 
 export function SettlementCard({
+  settlementId,
   fromUser,
   toUser,
   amount,
   isPaid = false,
+  readOnly = false,
   index = 0,
 }: SettlementCardProps) {
   const { t, formatMoney, dir } = useI18n();
@@ -116,13 +121,17 @@ export function SettlementCard({
             </p>
           )}
 
-          {isPaid && (
+          {settlementId && !readOnly ? (
+            <div className="mt-4">
+              <PaymentToggle settlementId={settlementId} isPaid={isPaid} />
+            </div>
+          ) : isPaid ? (
             <div className="mt-4 flex justify-center">
               <Badge variant="success" className="px-4 py-1">
                 {t("settlement.paid")}
               </Badge>
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
     </motion.div>

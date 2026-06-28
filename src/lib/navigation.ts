@@ -4,6 +4,7 @@ const NAV_HREFS = [
   "/orders",
   "/members",
   "/settlement",
+  "/archive",
   "/settings",
   "/",
 ] as const;
