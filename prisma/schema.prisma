@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  avatar    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ordersPaid    Order[]       @relation("OrderPayer")
+  orderMembers  OrderMember[]
+  settlementsFrom Settlement[] @relation("SettlementFrom")
+  settlementsTo   Settlement[] @relation("SettlementTo")
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  date            DateTime
+  totalAmount     Int
+  labPerPerson    Int      @default(350)
+  labTotalAmount  Int
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  payerId String
+  payer   User   @relation("OrderPayer", fields: [payerId], references: [id])
+
+  members  OrderMember[]
+  expenses Expense[]
+}
+
+model OrderMember {
+  id          String @id @default(cuid())
+  foodPrice   Int
+  shareAmount Int
+  pocketAmount Int
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([orderId, userId])
+}
+
+model Expense {
+  id     String @id @default(cuid())
+  name   String
+  amount Int
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Settlement {
+  id        String   @id @default(cuid())
+  amount    Int
+  weekStart DateTime
+  weekEnd   DateTime
+  isPaid    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fromUserId String
+  fromUser   User   @relation("SettlementFrom", fields: [fromUserId], references: [id])
+
+  toUserId String
+  toUser   User   @relation("SettlementTo", fields: [toUserId], references: [id])
+}
+
+model WeeklyReport {
+  id              String   @id @default(cuid())
+  weekStart       DateTime @unique
+  weekEnd         DateTime
+  totalExpenses   Int
+  totalOrders     Int
+  labContribution Int
+  memberPaid      Int
+  remainingBalance Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Settings {
+  id              String @id @default("default")
+  labPerPerson    Int    @default(350)
+  labName         String @default("آزمایشگاه ZLab")
+  defaultLocale   String @default("fa")
+  currency        String @default("تومان")
+  weekStartDay    Int    @default(6)
+}

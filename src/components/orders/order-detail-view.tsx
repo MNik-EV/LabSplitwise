@@ -1,0 +1,222 @@
+"use client";
+
+import Link from "next/link";
+import {
+  Calendar,
+  Store,
+  CreditCard,
+  Users,
+  Building2,
+  Pencil,
+  ArrowRight,
+  ArrowLeft,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DeleteOrderDialog } from "@/components/orders/delete-order-dialog";
+import { getInitials, getAvatarColor, formatLocalizedDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { useI18n } from "@/components/layout/i18n-provider";
+
+type OrderDetail = NonNullable<Awaited<ReturnType<typeof import("@/actions").getOrder>>>;
+
+export function OrderDetailView({ order }: { order: OrderDetail }) {
+  const { t, formatMoney, locale, dir } = useI18n();
+  const BackArrow = dir === "rtl" ? ArrowRight : ArrowLeft;
+
+  const sharedPerPerson =
+    order.members.length > 0
+      ? Math.round(
+          order.expenses.reduce((s, e) => s + e.amount, 0) / order.members.length,
+        )
+      : 0;
+
+  const payerPocket =
+    order.members.find((m) => m.userId === order.payerId)?.pocketAmount ?? 0;
+  const payerFromOthers = order.members
+    .filter((m) => m.userId !== order.payerId)
+    .reduce((s, m) => s + m.pocketAmount, 0);
+
+  return (
+    <>
+      <div className="mb-6 flex gap-2">
+        <Button variant="outline" asChild>
+          <Link href="/orders">
+            <BackArrow className="h-4 w-4" />
+            {t("common.back")}
+          </Link>
+        </Button>
+        <Button asChild>
+          <Link href={`/orders/${order.id}/edit`}>
+            <Pencil className="h-4 w-4" />
+            {t("common.edit")}
+          </Link>
+        </Button>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("orders.memberList")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {order.members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between rounded-xl border p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        className={cn("h-10 w-10", getAvatarColor(member.user.name))}
+                      >
+                        <AvatarFallback className="bg-transparent text-white">
+                          {getInitials(member.user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{member.user.name}</p>
+                        {member.userId === order.payerId && (
+                          <Badge variant="secondary" className="mt-1">
+                            {t("common.payer")}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-end">
+                      <p className="font-bold">{formatMoney(member.shareAmount)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("common.food")}: {formatMoney(member.foodPrice)} +{" "}
+                        {t("common.shared")}: {formatMoney(sharedPerPerson)}
+                      </p>
+                      <p className="text-xs text-success">
+                        {t("common.fromPocket")}: {formatMoney(member.pocketAmount)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {order.expenses.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("orders.sharedList")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {order.expenses.map((expense) => (
+                    <div
+                      key={expense.id}
+                      className="flex justify-between rounded-lg bg-muted/50 px-4 py-2 text-sm"
+                    >
+                      <span>{expense.name}</span>
+                      <span className="font-medium">{formatMoney(expense.amount)}</span>
+                    </div>
+                  ))}
+                  <Separator className="my-2" />
+                  <div className="flex justify-between text-sm font-medium">
+                    <span>{t("orders.sharedTotal")}</span>
+                    <span>
+                      {formatMoney(order.expenses.reduce((s, e) => s + e.amount, 0))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{t("orders.sharePerPerson")}</span>
+                    <span>{formatMoney(sharedPerPerson)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("orders.summary")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>{formatLocalizedDate(order.date, locale)}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Store className="h-4 w-4 text-muted-foreground" />
+                <span>{order.restaurant.name}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span>{order.payer.name}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  {order.members.length} {t("common.people")}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("common.total")}</span>
+                <span className="text-xl font-bold text-primary">
+                  {formatMoney(order.totalAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Building2 className="h-4 w-4" />
+                  {t("orders.labShare")}
+                </span>
+                <span className="font-medium text-success">
+                  {formatMoney(order.labTotalAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t("orders.labPerPerson")}</span>
+                <span>{formatMoney(order.labPerPerson)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("orders.payerSection")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("orders.amountPaid")}</span>
+                <span className="font-bold">{formatMoney(order.totalAmount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("common.fromPocket")}</span>
+                <span>{formatMoney(payerPocket)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("orders.receivedFromMembers")}
+                </span>
+                <span className="text-success">{formatMoney(payerFromOthers)}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-medium">
+                <span>{t("orders.netFromPocket")}</span>
+                <span>{formatMoney(payerPocket)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <DeleteOrderDialog orderId={order.id} restaurantName={order.restaurant.name}>
+            <Button variant="destructive" className="w-full">
+              {t("orders.deleteTitle")}
+            </Button>
+          </DeleteOrderDialog>
+        </div>
+      </div>
+    </>
+  );
+}
