@@ -115,6 +115,9 @@ export const dictionary = {
     stepReview: "بررسی نهایی",
     selectMembers: "اعضای حاضر را انتخاب کنید و قیمت غذای هر نفر را وارد کنید",
     minMember: "حداقل یک عضو انتخاب کنید",
+    fixErrors: "لطفاً فیلدهای مشخص‌شده را تکمیل کنید",
+    foodPriceRequired: "قیمت غذای هر عضو را وارد کنید",
+    expenseIncomplete: "نام و مبلغ هزینه مشترک را کامل کنید",
     labField: "سهم آزمایشگاه (هر نفر)",
     submit: "ثبت سفارش",
     saveChanges: "ذخیره تغییرات",
@@ -192,6 +195,12 @@ export const dictionary = {
     title: "صفحه پیدا نشد",
     desc: "صفحه‌ای که دنبال آن هستید وجود ندارد",
     back: "بازگشت به داشبورد",
+  },
+  pwa: {
+    title: "نصب اپ ZLab",
+    androidHint: "برای دسترسی سریع‌تر، اپ را روی گوشی نصب کنید",
+    iosHint: "Share را بزنید و «Add to Home Screen» را انتخاب کنید",
+    install: "نصب",
   },
 } as const;
 

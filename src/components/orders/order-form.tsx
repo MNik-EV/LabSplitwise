@@ -1,8 +1,8 @@
 "use client";
 
-import { useTransition, useMemo } from "react";
+import { useTransition, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LocaleDatePicker } from "@/components/shared/locale-date-picker";
+import { FormError } from "@/components/shared/form-error";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -79,7 +80,12 @@ export function OrderForm({
       notes: "",
       ...defaultValues,
     },
+    mode: "onSubmit",
   });
+
+  useEffect(() => {
+    if (mode === "create") resetStep();
+  }, [mode, resetStep]);
 
   const { fields: memberFields, append: appendMember, remove: removeMember } =
     useFieldArray({ control: form.control, name: "members" });
@@ -112,17 +118,45 @@ export function OrderForm({
   };
 
   const nextStep = async () => {
-    let valid = true;
-    if (step === 1) valid = await form.trigger(["date", "restaurantId", "payerId"]);
-    else if (step === 2) {
-      valid = await form.trigger("members");
+    if (step === 1) {
+      const valid = await form.trigger(["date", "restaurantId", "payerId", "labPerPerson"]);
+      if (!valid) {
+        toast.error(t("orders.fixErrors"));
+        return;
+      }
+    } else if (step === 2) {
       if (memberFields.length === 0) {
         toast.error(t("orders.minMember"));
-        valid = false;
+        return;
+      }
+      const members = form.getValues("members");
+      if (members.some((m) => !m.foodPrice || m.foodPrice <= 0)) {
+        toast.error(t("orders.foodPriceRequired"));
+        await form.trigger("members");
+        return;
+      }
+      const valid = await form.trigger("members");
+      if (!valid) {
+        toast.error(t("orders.fixErrors"));
+        return;
+      }
+    } else if (step === 3) {
+      const expenses = form.getValues("sharedExpenses") ?? [];
+      const hasRows = expenses.length > 0;
+      const hasIncomplete = expenses.some(
+        (e) => !e.name?.trim() || e.amount === undefined || e.amount <= 0,
+      );
+      if (hasRows && hasIncomplete) {
+        const valid = await form.trigger("sharedExpenses");
+        if (!valid) toast.error(t("orders.expenseIncomplete"));
+        return;
       }
     }
-    if (valid) setStep(step + 1);
+
+    setStep(step + 1);
   };
+
+  const { errors } = form.formState;
 
   const onSubmit = (data: CreateOrderInput) => {
     startTransition(async () => {
@@ -197,55 +231,82 @@ export function OrderForm({
                       id="date"
                       value={form.watch("date")}
                       onChange={(v) =>
-                        form.setValue("date", v, { shouldValidate: true })
+                        form.setValue("date", v, { shouldValidate: true, shouldDirty: true })
                       }
                     />
+                    <FormError message={errors.date?.message} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("orders.restaurant")}</Label>
-                    <Select
-                      value={form.watch("restaurantId")}
-                      onValueChange={(v) => form.setValue("restaurantId", v)}
-                    >
-                      <SelectTrigger>
-                        <Store className="h-4 w-4 text-muted-foreground" />
-                        <SelectValue placeholder={t("orders.selectRestaurant")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {restaurants.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>
-                            {r.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      control={form.control}
+                      name="restaurantId"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(v) => {
+                            field.onChange(v);
+                            form.clearErrors("restaurantId");
+                          }}
+                        >
+                          <SelectTrigger
+                            className={errors.restaurantId ? "border-destructive ring-destructive/30" : ""}
+                          >
+                            <Store className="h-4 w-4 text-muted-foreground" />
+                            <SelectValue placeholder={t("orders.selectRestaurant")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {restaurants.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FormError message={errors.restaurantId?.message} />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("common.payer")}</Label>
-                    <Select
-                      value={form.watch("payerId")}
-                      onValueChange={(v) => form.setValue("payerId", v)}
-                    >
-                      <SelectTrigger>
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <SelectValue placeholder={t("orders.selectPayer")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.map((u) => (
-                          <SelectItem key={u.id} value={u.id}>
-                            {u.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      control={form.control}
+                      name="payerId"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(v) => {
+                            field.onChange(v);
+                            form.clearErrors("payerId");
+                          }}
+                        >
+                          <SelectTrigger
+                            className={errors.payerId ? "border-destructive ring-destructive/30" : ""}
+                          >
+                            <CreditCard className="h-4 w-4 text-muted-foreground" />
+                            <SelectValue placeholder={t("orders.selectPayer")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.map((u) => (
+                              <SelectItem key={u.id} value={u.id}>
+                                {u.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FormError message={errors.payerId?.message} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="labPerPerson">{t("orders.labField")}</Label>
                     <Input
                       id="labPerPerson"
                       type="number"
+                      className={errors.labPerPerson ? "border-destructive" : ""}
                       {...form.register("labPerPerson")}
                     />
+                    <FormError message={errors.labPerPerson?.message} />
                   </div>
                 </CardContent>
               </Card>
@@ -261,9 +322,11 @@ export function OrderForm({
               className="space-y-4"
             >
               <p className="text-sm text-muted-foreground">{t("orders.selectMembers")}</p>
+              <FormError message={errors.members?.message ?? errors.members?.root?.message} />
               {users.map((user) => {
                 const memberIndex = memberFields.findIndex((m) => m.userId === user.id);
                 const isSelected = memberIndex >= 0;
+                const memberError = errors.members?.[memberIndex]?.foodPrice;
                 return (
                   <Card
                     key={user.id}
@@ -272,27 +335,32 @@ export function OrderForm({
                     }`}
                     onClick={() => !isSelected && toggleMember(user.id)}
                   >
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div
-                        className={`flex h-5 w-5 items-center justify-center rounded-md border ${
-                          isSelected
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : ""
-                        }`}
-                      >
-                        {isSelected && <Check className="h-3 w-3" />}
+                    <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:gap-4">
+                      <div className="flex flex-1 items-center gap-4">
+                        <div
+                          className={`flex h-5 w-5 items-center justify-center rounded-md border ${
+                            isSelected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : ""
+                          }`}
+                        >
+                          {isSelected && <Check className="h-3 w-3" />}
+                        </div>
+                        <span className="flex-1 font-medium">{user.name}</span>
                       </div>
-                      <span className="flex-1 font-medium">{user.name}</span>
                       {isSelected && (
-                        <Input
-                          type="number"
-                          placeholder={t("orders.foodPrice")}
-                          className="w-32"
-                          {...form.register(`members.${memberIndex}.foodPrice`, {
-                            valueAsNumber: true,
-                          })}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        <div className="w-full sm:w-36">
+                          <Input
+                            type="number"
+                            placeholder={t("orders.foodPrice")}
+                            className={memberError ? "border-destructive" : ""}
+                            {...form.register(`members.${memberIndex}.foodPrice`, {
+                              valueAsNumber: true,
+                            })}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <FormError message={memberError?.message} />
+                        </div>
                       )}
                     </CardContent>
                   </Card>
@@ -309,33 +377,44 @@ export function OrderForm({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              {expenseFields.map((field, index) => (
-                <Card key={field.id}>
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <Input
-                      placeholder={t("orders.expenseName")}
-                      className="flex-1"
-                      {...form.register(`sharedExpenses.${index}.name`)}
-                    />
-                    <Input
-                      type="number"
-                      placeholder={t("orders.amount")}
-                      className="w-32"
-                      {...form.register(`sharedExpenses.${index}.amount`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeExpense(index)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {expenseFields.map((field, index) => {
+                const nameError = errors.sharedExpenses?.[index]?.name;
+                const amountError = errors.sharedExpenses?.[index]?.amount;
+                return (
+                  <Card key={field.id}>
+                    <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:gap-3">
+                      <div className="flex-1 space-y-1">
+                        <Input
+                          placeholder={t("orders.expenseName")}
+                          className={nameError ? "border-destructive" : ""}
+                          {...form.register(`sharedExpenses.${index}.name`)}
+                        />
+                        <FormError message={nameError?.message} />
+                      </div>
+                      <div className="w-full space-y-1 sm:w-32">
+                        <Input
+                          type="number"
+                          placeholder={t("orders.amount")}
+                          className={amountError ? "border-destructive" : ""}
+                          {...form.register(`sharedExpenses.${index}.amount`, {
+                            valueAsNumber: true,
+                          })}
+                        />
+                        <FormError message={amountError?.message} />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="self-end sm:self-start"
+                        onClick={() => removeExpense(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
               <Button
                 type="button"
                 variant="outline"

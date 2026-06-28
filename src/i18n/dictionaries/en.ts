@@ -115,6 +115,9 @@ export const dictionary = {
     stepReview: "Review",
     selectMembers: "Select attendees and enter food price for each",
     minMember: "Select at least one member",
+    fixErrors: "Please complete the highlighted fields",
+    foodPriceRequired: "Enter food price for each member",
+    expenseIncomplete: "Complete shared expense name and amount",
     labField: "Lab share (per person)",
     submit: "Submit order",
     saveChanges: "Save changes",
@@ -192,6 +195,12 @@ export const dictionary = {
     title: "Page not found",
     desc: "The page you're looking for doesn't exist",
     back: "Back to dashboard",
+  },
+  pwa: {
+    title: "Install ZLab app",
+    androidHint: "Install the app on your phone for quick access",
+    iosHint: "Tap Share, then choose “Add to Home Screen”",
+    install: "Install",
   },
 } as const;
 

@@ -7,6 +7,8 @@ import { I18nProvider } from "@/components/layout/i18n-provider";
 import { Sidebar, MobileHeader } from "@/components/layout/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { ClientErrorBoundary } from "@/components/shared/client-error-boundary";
+import { InstallPrompt } from "@/components/shared/install-prompt";
+import { PwaRegister } from "@/components/shared/pwa-register";
 import { getLocale } from "@/i18n/server";
 import { localeConfig } from "@/config/defaults";
 
@@ -19,6 +21,22 @@ const vazirmatn = Vazirmatn({
 export const metadata: Metadata = {
   title: "ZLab Lunch | Group Expense Manager",
   description: "Smart lunch expense & settlement system for research labs",
+  applicationName: "ZLab Lunch",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ZLab",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#2563eb" },
+    { media: "(prefers-color-scheme: dark)", color: "#1d4ed8" },
+  ],
 };
 
 export default async function RootLayout({
@@ -40,9 +58,11 @@ export default async function RootLayout({
         >
           <I18nProvider locale={locale}>
             <ClientErrorBoundary>
+              <PwaRegister />
               <div className="flex min-h-screen">
                 <Sidebar />
                 <div className="flex flex-1 flex-col">
+                  <InstallPrompt />
                   <MobileHeader />
                   <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
                     {children}
