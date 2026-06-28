@@ -13,7 +13,7 @@ import { useI18n } from "@/components/layout/i18n-provider";
 interface OrderCardProps {
   order: {
     id: string;
-    date: Date;
+    date: Date | string;
     totalAmount: number;
     restaurant: { name: string };
     payer: { id: string; name: string };
