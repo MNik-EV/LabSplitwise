@@ -23,13 +23,13 @@ export const localeConfig: Record<
   fa: {
     dir: "rtl",
     label: "فارسی",
-    currency: "تومان",
+    currency: "هزار تومان",
     numberLocale: "fa-IR",
   },
   en: {
     dir: "ltr",
     label: "English",
-    currency: "USD",
+    currency: "k Toman",
     numberLocale: "en-US",
   },
 };

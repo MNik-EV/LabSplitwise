@@ -1,4 +1,5 @@
 import type { Locale } from "@/config/defaults";
+import { localeConfig } from "@/config/defaults";
 import { dictionary as faDict } from "./dictionaries/fa";
 import { dictionary as enDict } from "./dictionaries/en";
 
@@ -27,12 +28,8 @@ export function t(
 }
 
 export function formatMoney(amount: number, locale: Locale): string {
-  const formatted = amount.toLocaleString(locale === "en" ? "en-US" : "fa-IR");
-
-  if (locale === "en") {
-    return `${formatted} Toman`;
-  }
-  return `${formatted} تومان`;
+  const { numberLocale, currency } = localeConfig[locale];
+  return `${amount.toLocaleString(numberLocale)} ${currency}`;
 }
 
 export function formatCount(num: number, locale: Locale): string {

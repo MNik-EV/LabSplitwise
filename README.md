@@ -50,7 +50,7 @@ Research labs eat lunch together every day. Someone pays, the lab subsidizes eac
 - 🏪 **Restaurant & member management**
 
 ### UX / UI
-- 🌐 **Bilingual** — Persian (RTL, Toman) · English (LTR, USD)
+- 🌐 **Bilingual** — Persian (RTL) · English (LTR) — amounts in **thousand Toman**
 - 🌓 **Light & Dark mode**
 - 🎨 Modern SaaS design — Linear / Notion inspired
 - ✨ Framer Motion animations, toasts, skeletons, empty states
@@ -109,12 +109,14 @@ Or change at runtime in **Settings → General**.
 
 | Locale | Direction | Currency display |
 |--------|-----------|------------------|
-| `fa`   | RTL       | `۱۲۳,۴۵۶ تومان`  |
-| `en`   | LTR       | `123,456 Toman`  |
+| `fa`   | RTL       | `۱,۰۰۰ هزار تومان` |
+| `en`   | LTR       | `1,000 k Toman` |
 
 ---
 
 ## 🧮 How calculations work
+
+All amounts are in **thousand Toman** (`1000` = one million Toman).
 
 ```
 Food prices:     420 + 370 + 370 + 370 = 1,530

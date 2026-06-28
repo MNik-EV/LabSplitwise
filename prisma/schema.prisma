@@ -118,6 +118,6 @@ model Settings {
   labPerPerson    Int    @default(350)
   labName         String @default("آزمایشگاه ZLab")
   defaultLocale   String @default("fa")
-  currency        String @default("تومان")
+  currency        String @default("هزار تومان")
   weekStartDay    Int    @default(6)
 }

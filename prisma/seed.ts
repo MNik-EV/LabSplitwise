@@ -21,7 +21,7 @@ async function main() {
       labPerPerson: appDefaults.labPerPerson,
       labName: appDefaults.labName.fa,
       defaultLocale: appDefaults.locale,
-      currency: "تومان",
+      currency: "هزار تومان",
       weekStartDay: appDefaults.weekStartDay,
     },
   });
