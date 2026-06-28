@@ -30,16 +30,18 @@ export interface OrderCalculationResult {
   memberCount: number;
 }
 
+import { distributeIntegerTotal } from "./distribute";
+
 export function calculateOrder(input: OrderCalculationInput): OrderCalculationResult {
   const memberCount = input.members.length;
   const totalSharedExpenses = input.sharedExpenses.reduce(
     (sum, e) => sum + e.amount,
     0,
   );
-  const sharedPortion =
-    memberCount > 0 ? Math.round(totalSharedExpenses / memberCount) : 0;
+  const sharedPortions = distributeIntegerTotal(totalSharedExpenses, memberCount);
 
-  const members: MemberCalculation[] = input.members.map((m) => {
+  const members: MemberCalculation[] = input.members.map((m, index) => {
+    const sharedPortion = sharedPortions[index] ?? 0;
     const shareAmount = m.foodPrice + sharedPortion;
     const pocketAmount = Math.max(0, shareAmount - input.labPerPerson);
     return {

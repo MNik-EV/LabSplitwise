@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { toastActionError } from "@/lib/action-error-toast";
 import { Plus, Pencil, Trash2, UserPlus, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,8 +71,8 @@ export function MembersSettings({ members }: MembersSettingsProps) {
         setName("");
         setCardNumber("");
         router.refresh();
-      } catch {
-        toast.error(t("members.addError"));
+      } catch (error) {
+        toastActionError(error, t, "members.addError");
       }
     });
   };
@@ -105,8 +106,8 @@ export function MembersSettings({ members }: MembersSettingsProps) {
         toast.success(t("members.updateSuccess"));
         cancelEdit();
         router.refresh();
-      } catch {
-        toast.error(t("members.updateError"));
+      } catch (error) {
+        toastActionError(error, t, "members.updateError");
       }
     });
   };
@@ -117,8 +118,8 @@ export function MembersSettings({ members }: MembersSettingsProps) {
         await deleteUser(id);
         toast.success(t("members.deleteSuccess"));
         router.refresh();
-      } catch {
-        toast.error(t("members.deleteError"));
+      } catch (error) {
+        toastActionError(error, t, "members.deleteError");
       }
     });
   };

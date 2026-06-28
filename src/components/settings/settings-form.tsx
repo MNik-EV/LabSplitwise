@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -15,14 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateSettingsSchema } from "@/lib/validations";
+import { buildValidationSchemas } from "@/lib/validations";
 import { updateSettings } from "@/actions";
+import { toastActionError } from "@/lib/action-error-toast";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useI18n } from "@/components/layout/i18n-provider";
 import { appDefaults } from "@/config/defaults";
-
-type SettingsFormData = z.infer<typeof updateSettingsSchema>;
 
 interface SettingsFormProps {
   settings: {
@@ -36,7 +35,14 @@ interface SettingsFormProps {
 export function SettingsForm({ settings }: SettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, dict } = useI18n();
+
+  const settingsSchema = useMemo(
+    () => buildValidationSchemas(dict.validation).updateSettingsSchema,
+    [dict],
+  );
+
+  type SettingsFormData = z.infer<typeof settingsSchema>;
 
   const weekDays = [
     { value: 0, label: t("days.sun") },
@@ -49,7 +55,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   ];
 
   const form = useForm<SettingsFormData>({
-    resolver: zodResolver(updateSettingsSchema),
+    resolver: zodResolver(settingsSchema),
     defaultValues: {
       labPerPerson: settings.labPerPerson ?? appDefaults.labPerPerson,
       labName: settings.labName,
@@ -65,8 +71,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         document.cookie = `locale=${data.defaultLocale};path=/;max-age=31536000;sameSite=lax`;
         toast.success(t("settings.saveSuccess"));
         router.refresh();
-      } catch {
-        toast.error(t("settings.saveError"));
+      } catch (error) {
+        toastActionError(error, t, "settings.saveError");
       }
     });
   };
@@ -84,13 +90,10 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="labPerPerson">{t("settings.labPerPerson")}</Label>
-            <Input
-              id="labPerPerson"
-              type="number"
-              {...form.register("labPerPerson")}
-            />
+            <Input id="labPerPerson" type="number" {...form.register("labPerPerson")} />
             <p className="text-xs text-muted-foreground">
-              {t("settings.currencyNote")} · Default: {appDefaults.labPerPerson}
+              {t("settings.currencyNote")} · {t("settings.defaultLabel")}:{" "}
+              {appDefaults.labPerPerson}
             </p>
           </div>
           <div className="space-y-2">

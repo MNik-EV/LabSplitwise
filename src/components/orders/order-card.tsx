@@ -19,9 +19,10 @@ interface OrderCardProps {
     payer: { id: string; name: string };
     members: { id: string }[];
   };
+  readOnly?: boolean;
 }
 
-export function OrderCard({ order }: OrderCardProps) {
+export function OrderCard({ order, readOnly = false }: OrderCardProps) {
   const { t, formatMoney, locale, dir } = useI18n();
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
 
@@ -63,20 +64,24 @@ export function OrderCard({ order }: OrderCardProps) {
                 {t("common.details")}
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link href={`/orders/${order.id}/edit`}>
-                <Pencil className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
-            <DeleteOrderDialog orderId={order.id} restaurantName={order.restaurant.name}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </DeleteOrderDialog>
+            {!readOnly && (
+              <>
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <Link href={`/orders/${order.id}/edit`}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+                <DeleteOrderDialog orderId={order.id} restaurantName={order.restaurant.name}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </DeleteOrderDialog>
+              </>
+            )}
             <Button
               variant="ghost"
               size="icon"

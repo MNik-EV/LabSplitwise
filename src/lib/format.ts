@@ -1,42 +1,15 @@
+import { parseStoredDate } from "@/lib/date-input";
 import { format as formatJalali } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
-import { format as formatGregorian, isValid, parseISO } from "date-fns";
+import { format as formatGregorian } from "date-fns";
 import { enUS } from "date-fns/locale";
 import type { Locale } from "@/config/defaults";
-
-function parseDateInput(
-  value: Date | string | number | null | undefined,
-): Date | null {
-  if (value == null) return null;
-
-  if (value instanceof Date) {
-    return isValid(value) ? value : null;
-  }
-
-  if (typeof value === "number") {
-    const d = new Date(value);
-    return isValid(d) ? d : null;
-  }
-
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-
-    const d = /^\d{4}-\d{2}-\d{2}$/.test(trimmed)
-      ? parseISO(trimmed)
-      : new Date(trimmed);
-
-    return isValid(d) ? d : null;
-  }
-
-  return null;
-}
 
 export function formatLocalizedDate(
   date: Date | string,
   locale: Locale,
 ): string {
-  const d = parseDateInput(date);
+  const d = parseStoredDate(date);
   if (!d) return "—";
 
   try {
@@ -53,7 +26,7 @@ export function formatLocalizedShort(
   date: Date | string,
   locale: Locale,
 ): string {
-  const d = parseDateInput(date);
+  const d = parseStoredDate(date);
   if (!d) return "—";
 
   try {

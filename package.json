@@ -7,6 +7,8 @@
     "build": "prisma generate && tsx prisma/pre-deploy.ts && prisma db push --accept-data-loss && next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --accept-data-loss",
     "db:seed": "tsx prisma/seed.ts",
@@ -62,7 +64,8 @@
     "prisma": "^6.1.0",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

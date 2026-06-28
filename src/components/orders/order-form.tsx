@@ -32,7 +32,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { createOrderSchema, type CreateOrderInput } from "@/lib/validations";
+import { buildValidationSchemas, type CreateOrderInput } from "@/lib/validations";
+import { toDateInputValue } from "@/lib/date-input";
+import { toastActionError } from "@/lib/action-error-toast";
 import { calculateOrder } from "@/lib/calculations";
 import { createOrder, updateOrder } from "@/actions";
 import { useOrderFormStore } from "@/stores/app-store";
@@ -63,15 +65,20 @@ export function OrderForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { step, setStep, reset: resetStep } = useOrderFormStore();
-  const { t, formatMoney, dir } = useI18n();
+  const { t, formatMoney, dir, dict } = useI18n();
   const isRtl = dir === "rtl";
   const PrevChevron = isRtl ? ChevronRight : ChevronLeft;
   const NextChevron = isRtl ? ChevronLeft : ChevronRight;
 
+  const orderSchema = useMemo(
+    () => buildValidationSchemas(dict.validation).createOrderSchema,
+    [dict],
+  );
+
   const form = useForm<CreateOrderInput>({
-    resolver: zodResolver(createOrderSchema),
+    resolver: zodResolver(orderSchema),
     defaultValues: {
-      date: new Date().toISOString().split("T")[0],
+      date: toDateInputValue(new Date()),
       restaurantId: "",
       payerId: "",
       members: [],
@@ -171,8 +178,8 @@ export function OrderForm({
         resetStep();
         router.push("/orders");
         router.refresh();
-      } catch {
-        toast.error(t("orders.createError"));
+      } catch (error) {
+        toastActionError(error, t, "orders.createError");
       }
     });
   };

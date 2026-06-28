@@ -27,17 +27,12 @@ export function t(
 }
 
 export function formatMoney(amount: number, locale: Locale): string {
-  const { currency, numberLocale } =
-    locale === "en"
-      ? { currency: "USD", numberLocale: "en-US" }
-      : { currency: "تومان", numberLocale: "fa-IR" };
-
-  const formatted = amount.toLocaleString(numberLocale);
+  const formatted = amount.toLocaleString(locale === "en" ? "en-US" : "fa-IR");
 
   if (locale === "en") {
-    return `$${formatted}`;
+    return `${formatted} Toman`;
   }
-  return `${formatted} ${currency}`;
+  return `${formatted} تومان`;
 }
 
 export function formatCount(num: number, locale: Locale): string {

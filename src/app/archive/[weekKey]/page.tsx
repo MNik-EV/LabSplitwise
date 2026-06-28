@@ -71,7 +71,7 @@ export default async function ArchiveWeekPage({ params }: ArchiveWeekPageProps) 
           <h2 className="mb-4 text-lg font-semibold">{t("archive.weekOrders")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {orders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} readOnly={settlement.isClosed} />
             ))}
           </div>
         </div>

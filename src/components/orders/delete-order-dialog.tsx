@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { toastActionError } from "@/lib/action-error-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,8 +41,8 @@ export function DeleteOrderDialog({
         toast.success(t("orders.deleteSuccess"));
         setOpen(false);
         router.refresh();
-      } catch {
-        toast.error(t("orders.deleteError"));
+      } catch (error) {
+        toastActionError(error, t, "orders.deleteError");
       }
     });
   };

@@ -2,12 +2,24 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Plus, Store } from "lucide-react";
+import { Plus, Store, Pencil, Trash2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { createRestaurant } from "@/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { createRestaurant, updateRestaurant, deleteRestaurant } from "@/actions";
+import { toastActionError } from "@/lib/action-error-toast";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/components/layout/i18n-provider";
 
@@ -17,6 +29,8 @@ interface RestaurantsManagerProps {
 
 export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
   const [name, setName] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { t } = useI18n();
@@ -32,8 +46,47 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
         toast.success(t("settings.restaurantSuccess"));
         setName("");
         router.refresh();
-      } catch {
-        toast.error(t("settings.restaurantError"));
+      } catch (error) {
+        toastActionError(error, t, "settings.restaurantError");
+      }
+    });
+  };
+
+  const startEdit = (restaurant: { id: string; name: string }) => {
+    setEditingId(restaurant.id);
+    setEditName(restaurant.name);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditName("");
+  };
+
+  const handleUpdate = (id: string) => {
+    if (!editName.trim()) {
+      toast.error(t("settings.restaurantRequired"));
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await updateRestaurant({ id, name: editName.trim() });
+        toast.success(t("settings.restaurantUpdateSuccess"));
+        cancelEdit();
+        router.refresh();
+      } catch (error) {
+        toastActionError(error, t, "settings.restaurantError");
+      }
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    startTransition(async () => {
+      try {
+        await deleteRestaurant(id);
+        toast.success(t("settings.restaurantDeleteSuccess"));
+        router.refresh();
+      } catch (error) {
+        toastActionError(error, t, "settings.restaurantError");
       }
     });
   };
@@ -56,14 +109,72 @@ export function RestaurantsManager({ restaurants }: RestaurantsManagerProps) {
             {t("settings.addRestaurant")}
           </Button>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {restaurants.map((r) => (
-            <Badge key={r.id} variant="secondary" className="gap-1 px-3 py-1.5">
-              <Store className="h-3 w-3" />
-              {r.name}
-            </Badge>
-          ))}
-        </div>
+
+        {restaurants.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("settings.restaurantRequired")}</p>
+        ) : (
+          <div className="divide-y rounded-xl border">
+            {restaurants.map((r) => (
+              <div
+                key={r.id}
+                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                {editingId === r.id ? (
+                  <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="flex-1 space-y-1.5">
+                      <Label>{t("settings.newRestaurant")}</Label>
+                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="icon" onClick={() => handleUpdate(r.id)} disabled={isPending}>
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="outline" onClick={cancelEdit}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 font-medium">
+                      <Store className="h-4 w-4 text-muted-foreground" />
+                      {r.name}
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <Button size="icon" variant="outline" onClick={() => startEdit(r)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="outline">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t("settings.restaurantDeleteTitle")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t("settings.restaurantDeleteDesc", { name: r.name })}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(r.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {t("common.delete")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
