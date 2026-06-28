@@ -58,10 +58,6 @@ export default async function SettlementPage() {
         paidCount={settlement.paidCount}
         totalTransferCount={settlement.totalTransferCount}
         isClosed={settlement.isClosed}
-        weekLabel={t("settlement.weekRange", {
-          start: formatLocalizedDate(settlement.weekStart, locale),
-          end: formatLocalizedDate(settlement.weekEnd, locale),
-        })}
       />
     </PageTransition>
   );

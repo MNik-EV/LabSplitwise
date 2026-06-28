@@ -19,35 +19,6 @@ interface SettlementCardProps {
   index?: number;
 }
 
-function PersonBlock({
-  name,
-  role,
-  roleVariant,
-  action,
-  cardNumber,
-}: {
-  name: string;
-  role: string;
-  roleVariant: "destructive" | "success";
-  action: string;
-  cardNumber?: string | null;
-}) {
-  return (
-    <div className="flex flex-1 flex-col items-center gap-2 text-center">
-      <p className="text-lg font-bold">{name}</p>
-      <Badge variant={roleVariant === "destructive" ? "destructive" : "success"}>
-        {role}
-      </Badge>
-      <p className="text-xs text-muted-foreground">{action}</p>
-      {cardNumber && (
-        <div className="mt-1">
-          <CopyCardNumber value={cardNumber} compact />
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function SettlementCard({
   settlementId,
   fromUser,
@@ -63,66 +34,42 @@ export function SettlementCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08 }}
+      transition={{ delay: index * 0.05 }}
     >
       <Card
         className={cn(
-          "overflow-hidden border-2 transition-shadow hover:shadow-md",
-          isPaid ? "border-success/30 bg-success/5 opacity-80" : "border-primary/20",
+          "overflow-hidden transition-shadow",
+          isPaid ? "border-success/30 bg-success/5 opacity-90" : "border-border",
         )}
       >
-        <CardContent className="p-6">
-          <p className="mb-6 text-center text-base font-medium leading-relaxed">
-            {t("settlement.transferLine", {
-              from: fromUser.name,
-              amount: money,
-              to: toUser.name,
-            })}
-          </p>
+        <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <p className="min-w-0 flex-1 truncate text-end text-base font-semibold sm:text-lg">
+              {fromUser.name}
+            </p>
 
-          <div className="flex items-center justify-between gap-2 sm:gap-4">
-            <PersonBlock
-              name={fromUser.name}
-              role={t("settlement.debtor")}
-              roleVariant="destructive"
-              action={t("settlement.pays")}
-            />
-
-            <div className="flex shrink-0 flex-col items-center gap-2 px-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Arrow className="h-5 w-5 text-primary" />
-              </div>
-              <p className="whitespace-nowrap text-xl font-bold text-primary sm:text-2xl">
+            <div className="flex shrink-0 flex-col items-center gap-1">
+              <Arrow className="h-5 w-5 text-primary" aria-hidden />
+              <p className="whitespace-nowrap text-lg font-bold text-primary sm:text-xl">
                 {money}
               </p>
             </div>
 
-            <PersonBlock
-              name={toUser.name}
-              role={t("settlement.creditor")}
-              roleVariant="success"
-              action={t("settlement.receives")}
-              cardNumber={toUser.cardNumber}
-            />
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+              <p className="truncate text-base font-semibold sm:text-lg">{toUser.name}</p>
+              {toUser.cardNumber && (
+                <CopyCardNumber value={toUser.cardNumber} compact />
+              )}
+            </div>
           </div>
 
-          {!isPaid && toUser.cardNumber && (
-            <p className="mt-4 text-center text-xs text-muted-foreground">
-              {t("settlement.tapCardToCopy")}
-            </p>
-          )}
-
           {settlementId && !readOnly ? (
-            <div className="mt-4">
-              <PaymentToggle settlementId={settlementId} isPaid={isPaid} />
-            </div>
+            <PaymentToggle settlementId={settlementId} isPaid={isPaid} />
           ) : isPaid ? (
-            <div className="mt-4 flex justify-center">
-              <Badge variant="success" className="px-4 py-1">
-                {t("settlement.paid")}
-              </Badge>
+            <div className="flex justify-center">
+              <Badge variant="success">{t("settlement.paid")}</Badge>
             </div>
           ) : null}
         </CardContent>

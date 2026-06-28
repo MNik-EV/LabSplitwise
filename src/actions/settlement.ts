@@ -66,6 +66,36 @@ export async function getSettlementForRange(start: Date, end: Date) {
     where: { weekStart: start },
   });
 
+  const paidCount = existingSettlements.filter((s) => s.isPaid).length;
+  const totalTransferCount = existingSettlements.length;
+  const memberPaid = transfers.reduce((s, t) => s + t.amount, 0);
+
+  if (!weeklyReport?.isClosed) {
+    await prisma.weeklyReport.upsert({
+      where: { weekStart: start },
+      create: {
+        weekStart: start,
+        weekEnd: end,
+        totalExpenses,
+        totalOrders: orders.length,
+        labContribution,
+        memberPaid,
+        remainingBalance: 0,
+        totalTransfers: totalTransferCount,
+        paidTransfers: paidCount,
+      },
+      update: {
+        weekEnd: end,
+        totalExpenses,
+        totalOrders: orders.length,
+        labContribution,
+        memberPaid,
+        totalTransfers: totalTransferCount,
+        paidTransfers: paidCount,
+      },
+    });
+  }
+
   const resolveUser = (id: string) => {
     const user = userMap.get(id);
     if (!user) throw new ActionError("validation.memberNotFound");
@@ -97,8 +127,8 @@ export async function getSettlementForRange(start: Date, end: Date) {
       user: resolveUser(userId),
       amount,
     })),
-    paidCount: existingSettlements.filter((s) => s.isPaid).length,
-    totalTransferCount: existingSettlements.length,
+    paidCount,
+    totalTransferCount,
   };
 }
 
@@ -167,34 +197,6 @@ async function syncSettlementsForWeek(
   });
 }
 
-async function refreshWeeklyReportStats(start: Date, end: Date) {
-  const settlement = await getSettlementForRange(start, end);
-  const settlements = await prisma.settlement.findMany({ where: { weekStart: start } });
-  const paidTransfers = settlements.filter((s) => s.isPaid).length;
-
-  await prisma.weeklyReport.upsert({
-    where: { weekStart: start },
-    create: {
-      weekStart: start,
-      weekEnd: end,
-      totalExpenses: settlement.totalExpenses,
-      totalOrders: settlement.totalOrders,
-      labContribution: settlement.labContribution,
-      memberPaid: settlement.transfers.reduce((s, t) => s + t.amount, 0),
-      remainingBalance: 0,
-      totalTransfers: settlements.length,
-      paidTransfers,
-    },
-    update: {
-      totalExpenses: settlement.totalExpenses,
-      totalOrders: settlement.totalOrders,
-      labContribution: settlement.labContribution,
-      totalTransfers: settlements.length,
-      paidTransfers,
-    },
-  });
-}
-
 export async function getWeeklySettlement(weekStartDay = 6) {
   const { start, end } = getWeekRange(new Date(), weekStartDay);
   return getSettlementForRange(start, end);
@@ -203,15 +205,6 @@ export async function getWeeklySettlement(weekStartDay = 6) {
 export async function getSettlementByWeekKey(weekKey: string, weekStartDay = 6) {
   const { start, end } = getWeekRangeFromKey(weekKey, weekStartDay);
   return getSettlementForRange(start, end);
-}
-
-export async function saveWeeklySettlements(weekStartDay = 6) {
-  await requireSession();
-  const { start, end } = getWeekRange(new Date(), weekStartDay);
-  const settlement = await getSettlementForRange(start, end);
-  await refreshWeeklyReportStats(start, end);
-  revalidateAll();
-  return settlement;
 }
 
 export async function toggleSettlementPaid(id: string) {
@@ -225,7 +218,6 @@ export async function toggleSettlementPaid(id: string) {
     data: { isPaid: nextPaid, paidAt: nextPaid ? new Date() : null },
   });
 
-  await refreshWeeklyReportStats(current.weekStart, current.weekEnd);
   revalidateAll();
   return nextPaid;
 }

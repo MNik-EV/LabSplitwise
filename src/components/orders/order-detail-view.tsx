@@ -11,6 +11,7 @@ import {
   ArrowRight,
   ArrowLeft,
   StickyNote,
+  Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,7 @@ interface OrderDetailViewProps {
 export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProps) {
   const { t, formatMoney, locale, dir } = useI18n();
   const BackArrow = dir === "rtl" ? ArrowRight : ArrowLeft;
+  const ToPayerArrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
   const totalShared = order.expenses.reduce((s, e) => s + e.amount, 0);
   const payerPocket =
@@ -37,6 +39,7 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
   const payerFromOthers = order.members
     .filter((m) => m.userId !== order.payerId)
     .reduce((s, m) => s + m.pocketAmount, 0);
+  const payerOutOfPocket = order.totalAmount - order.labTotalAmount;
 
   return (
     <>
@@ -70,6 +73,9 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
               <div className="space-y-3">
                 {order.members.map((member) => {
                   const sharedPortion = member.shareAmount - member.foodPrice;
+                  const isPayer = member.userId === order.payerId;
+                  const owesPayer = !isPayer && member.pocketAmount > 0;
+
                   return (
                     <div
                       key={member.id}
@@ -77,7 +83,7 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
                     >
                       <div>
                         <p className="font-medium">{member.user.name}</p>
-                        {member.userId === order.payerId && (
+                        {isPayer && (
                           <Badge variant="secondary" className="mt-1">
                             {t("common.payer")}
                           </Badge>
@@ -89,9 +95,21 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
                           {t("common.food")}: {formatMoney(member.foodPrice)} +{" "}
                           {t("common.shared")}: {formatMoney(sharedPortion)}
                         </p>
-                        <p className="text-xs text-success">
-                          {t("common.fromPocket")}: {formatMoney(member.pocketAmount)}
-                        </p>
+                        {isPayer ? (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {t("orders.ownShare")}: {formatMoney(payerPocket)}
+                          </p>
+                        ) : owesPayer ? (
+                          <p className="mt-1 flex items-center justify-end gap-1 text-xs text-warning">
+                            <ToPayerArrow className="h-3 w-3 shrink-0" aria-hidden />
+                            <span>
+                              {t("orders.owesPayer", {
+                                payer: order.payer.name,
+                                amount: formatMoney(member.pocketAmount),
+                              })}
+                            </span>
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   );
@@ -136,7 +154,7 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
                 <p className="text-xs text-muted-foreground">{t("orders.notesHint")}</p>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                   {order.notes}
                 </p>
               </CardContent>
@@ -184,36 +202,38 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
                   {formatMoney(order.labTotalAmount)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("orders.labPerPerson")}</span>
-                <span>{formatMoney(order.labPerPerson)}</span>
-              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{t("orders.payerSection")}</CardTitle>
+              <p className="text-xs text-muted-foreground">{order.payer.name}</p>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
+            <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("orders.amountPaid")}</span>
-                <span className="font-bold">{formatMoney(order.totalAmount)}</span>
+                <span className="text-muted-foreground">{t("orders.paidToRestaurant")}</span>
+                <span>{formatMoney(order.totalAmount)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("common.fromPocket")}</span>
-                <span>{formatMoney(payerPocket)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t("orders.receivedFromMembers")}
+              <div className="flex justify-between text-success">
+                <span className="flex items-center gap-1">
+                  <Minus className="h-3 w-3" aria-hidden />
+                  {t("orders.labShare")}
                 </span>
-                <span className="text-success">{formatMoney(payerFromOthers)}</span>
+                <span>{formatMoney(order.labTotalAmount)}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-medium">
-                <span>{t("orders.netFromPocket")}</span>
+                <span>{t("orders.payerOutOfPocket")}</span>
+                <span className="text-primary">{formatMoney(payerOutOfPocket)}</span>
+              </div>
+              <div className="flex justify-between ps-3 text-muted-foreground">
+                <span>{t("orders.ownShare")}</span>
                 <span>{formatMoney(payerPocket)}</span>
+              </div>
+              <div className="flex justify-between ps-3 text-success">
+                <span>{t("orders.collectFromOthers")}</span>
+                <span>{formatMoney(payerFromOthers)}</span>
               </div>
             </CardContent>
           </Card>

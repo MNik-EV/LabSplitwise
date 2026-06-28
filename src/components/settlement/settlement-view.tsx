@@ -2,7 +2,6 @@
 
 import { WeeklySummary } from "@/components/settlement/weekly-summary";
 import { SettlementCard } from "@/components/settlement/settlement-card";
-import { ShareSettlementButton } from "@/components/settlement/share-settlement-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/components/layout/i18n-provider";
@@ -32,7 +31,6 @@ interface SettlementViewProps {
   totalTransferCount: number;
   isClosed?: boolean;
   readOnly?: boolean;
-  weekLabel?: string;
 }
 
 export function SettlementView({
@@ -45,7 +43,6 @@ export function SettlementView({
   totalTransferCount,
   isClosed,
   readOnly,
-  weekLabel,
 }: SettlementViewProps) {
   const { t, formatMoney } = useI18n();
   const allPaid = totalTransferCount > 0 && paidCount === totalTransferCount;
@@ -72,7 +69,6 @@ export function SettlementView({
           {!isClosed && !readOnly && (
             <Badge variant="default">{t("settlement.currentWeekBadge")}</Badge>
           )}
-          <ShareSettlementButton transfers={transfers} weekLabel={weekLabel} />
         </div>
       )}
 
@@ -98,9 +94,8 @@ export function SettlementView({
                 >
                   <span className="font-medium">{b.user.name}</span>
                   <Badge variant={b.amount >= 0 ? "success" : "destructive"}>
-                    {b.amount >= 0
-                      ? `${t("common.credit")} ${formatMoney(b.amount)}`
-                      : `${t("common.debt")} ${formatMoney(-b.amount)}`}
+                    {b.amount >= 0 ? "+" : "−"}
+                    {formatMoney(Math.abs(b.amount))}
                   </Badge>
                 </div>
               ))}
@@ -110,12 +105,7 @@ export function SettlementView({
       )}
 
       <div className="mt-8">
-        <h2 className="mb-4 text-lg font-semibold">
-          {t("settlement.optimalTransfers")}{" "}
-          <span className="text-sm font-normal text-muted-foreground">
-            {t("settlement.minTransactions")}
-          </span>
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold">{t("settlement.transfers")}</h2>
 
         {transfers.length === 0 ? (
           <Card>

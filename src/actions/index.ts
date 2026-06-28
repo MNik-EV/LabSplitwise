@@ -24,7 +24,6 @@ export {
   getSettlementForRange,
   getWeeklySettlement,
   getSettlementByWeekKey,
-  saveWeeklySettlements,
   toggleSettlementPaid,
   closeWeek,
   getArchivedWeeks,

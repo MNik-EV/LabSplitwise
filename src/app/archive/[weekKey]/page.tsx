@@ -67,10 +67,6 @@ export default async function ArchiveWeekPage({ params }: ArchiveWeekPageProps) 
         totalTransferCount={settlement.totalTransferCount}
         isClosed={settlement.isClosed}
         readOnly={settlement.isClosed}
-        weekLabel={t("settlement.weekRange", {
-          start: formatLocalizedDate(settlement.weekStart, locale),
-          end: formatLocalizedDate(settlement.weekEnd, locale),
-        })}
       />
 
       {orders.length > 0 && (

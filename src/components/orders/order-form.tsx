@@ -481,17 +481,30 @@ export function OrderForm({
                     </span>
                   </div>
                   <Separator />
-                  {calculation.members.map((m) => (
-                    <div key={m.userId} className="flex justify-between text-sm">
-                      <span>{getUserName(m.userId)}</span>
-                      <div className="text-end">
-                        <span className="font-medium">{formatMoney(m.shareAmount)}</span>
-                        <span className="ms-2 text-xs text-muted-foreground">
-                          ({t("common.fromPocket")}: {formatMoney(m.pocketAmount)})
-                        </span>
+                  {calculation.members.map((m) => {
+                    const isPayer = m.userId === watchedValues.payerId;
+                    const payerName = getUserName(watchedValues.payerId);
+                    return (
+                      <div key={m.userId} className="flex justify-between text-sm">
+                        <span>{getUserName(m.userId)}</span>
+                        <div className="text-end">
+                          <span className="font-medium">{formatMoney(m.shareAmount)}</span>
+                          {isPayer ? (
+                            <span className="ms-2 text-xs text-muted-foreground">
+                              ({t("orders.ownShare")}: {formatMoney(m.pocketAmount)})
+                            </span>
+                          ) : m.pocketAmount > 0 ? (
+                            <span className="ms-2 text-xs text-muted-foreground">
+                              ({t("orders.owesPayerShort", {
+                                payer: payerName,
+                                amount: formatMoney(m.pocketAmount),
+                              })})
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <Separator />
                   <div className="flex justify-between font-bold">
                     <span>{t("common.total")}</span>
