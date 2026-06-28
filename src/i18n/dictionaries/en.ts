@@ -281,6 +281,12 @@ export const dictionary = {
     loadPage: "Failed to load page",
     refreshHint: "Please refresh the page",
     refresh: "Refresh",
+    unauthorized: "You must be signed in to perform this action",
+  },
+  auth: {
+    signIn: "Sign in with Authentik",
+    signOut: "Sign out",
+    loading: "Checking session...",
   },
 } as const;
 

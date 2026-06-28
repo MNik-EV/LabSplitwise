@@ -9,6 +9,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { ClientErrorBoundary } from "@/components/shared/client-error-boundary";
 import { InstallPrompt } from "@/components/shared/install-prompt";
 import { PwaRegister } from "@/components/shared/pwa-register";
+import { AuthSessionProvider } from "@/components/layout/session-provider";
+import { isAuthEnabled } from "@/lib/auth-session";
 import { getLocale } from "@/i18n/server";
 import { localeConfig } from "@/config/defaults";
 
@@ -46,6 +48,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const { dir } = localeConfig[locale];
+  const authEnabled = isAuthEnabled();
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
@@ -56,11 +59,12 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <I18nProvider locale={locale}>
-            <ClientErrorBoundary>
-              <PwaRegister />
-              <div className="flex min-h-screen">
-                <Sidebar />
+          <AuthSessionProvider authEnabled={authEnabled}>
+            <I18nProvider locale={locale}>
+              <ClientErrorBoundary>
+                <PwaRegister />
+                <div className="flex min-h-screen">
+                  <Sidebar authEnabled={authEnabled} />
                 <div className="flex flex-1 flex-col">
                   <InstallPrompt />
                   <MobileHeader />
@@ -71,7 +75,8 @@ export default async function RootLayout({
               </div>
             </ClientErrorBoundary>
             <Toaster position="top-center" richColors />
-          </I18nProvider>
+            </I18nProvider>
+          </AuthSessionProvider>
         </ThemeProvider>
       </body>
     </html>

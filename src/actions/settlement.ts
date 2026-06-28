@@ -6,6 +6,7 @@ import { minimumCashFlow } from "@/lib/settlement";
 import { getWeekRange } from "@/lib/utils";
 import { getWeekRangeFromKey, weekKeyFromDate } from "@/lib/week";
 import { ActionError } from "@/lib/errors";
+import { requireSession } from "@/lib/auth-session";
 import { revalidateAll } from "./shared";
 
 async function loadUsersForSettlement(userIds: string[]) {
@@ -190,6 +191,8 @@ export async function getSettlementByWeekKey(weekKey: string, weekStartDay = 6) 
 }
 
 export async function saveWeeklySettlements(weekStartDay = 6) {
+  await requireSession();
+  await requireSession();
   const { start, end } = getWeekRange(new Date(), weekStartDay);
   const settlement = await getSettlementForRange(start, end);
   await refreshWeeklyReportStats(start, end);
@@ -198,6 +201,7 @@ export async function saveWeeklySettlements(weekStartDay = 6) {
 }
 
 export async function toggleSettlementPaid(id: string) {
+  await requireSession();
   const current = await prisma.settlement.findUnique({ where: { id } });
   if (!current) throw new ActionError("validation.settlementNotFound");
 
@@ -213,6 +217,7 @@ export async function toggleSettlementPaid(id: string) {
 }
 
 export async function closeWeek(weekStartDay = 6, weekKey?: string) {
+  await requireSession();
   const { start, end } = weekKey
     ? getWeekRangeFromKey(weekKey, weekStartDay)
     : getWeekRange(new Date(), weekStartDay);

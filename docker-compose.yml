@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-labsplitwise}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-labsplitwise}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - labsplitwise
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-labsplitwise} -d ${POSTGRES_DB:-labsplitwise}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-labsplitwise}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-labsplitwise}?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-generate-with-openssl-rand-base64-32}
+      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      AUTH_AUTHENTIK_ID: ${AUTH_AUTHENTIK_ID:-}
+      AUTH_AUTHENTIK_SECRET: ${AUTH_AUTHENTIK_SECRET:-}
+      AUTH_AUTHENTIK_ISSUER: ${AUTH_AUTHENTIK_ISSUER:-}
+      AUTH_DISABLED: ${AUTH_DISABLED:-false}
+      NEXT_PUBLIC_DEFAULT_LOCALE: ${NEXT_PUBLIC_DEFAULT_LOCALE:-fa}
+      NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON: ${NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON:-350}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - labsplitwise
+
+networks:
+  labsplitwise:
+    driver: bridge
+
+volumes:
+  postgres_data:

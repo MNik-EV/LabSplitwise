@@ -5,6 +5,7 @@ import { appDefaults } from "@/config/defaults";
 import { getDictionary } from "@/i18n";
 import { getLocale } from "@/i18n/server";
 import { buildValidationSchemas } from "@/lib/validation-schemas";
+import { requireSession } from "@/lib/auth-session";
 import { revalidateAll } from "./shared";
 
 export async function getSettings() {
@@ -24,6 +25,7 @@ export async function getSettings() {
 }
 
 export async function updateSettings(data: unknown) {
+  await requireSession();
   const locale = await getLocale();
   const { updateSettingsSchema } = buildValidationSchemas(getDictionary(locale).validation);
   const parsed = updateSettingsSchema.parse(data);

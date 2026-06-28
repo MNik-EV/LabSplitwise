@@ -22,7 +22,12 @@ import { useAppStore } from "@/stores/app-store";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { isNavActive } from "@/lib/navigation";
+import { AuthUserMenu } from "./auth-user-menu";
 import { useI18n } from "@/components/layout/i18n-provider";
+
+interface SidebarProps {
+  authEnabled?: boolean;
+}
 
 const navKeys = [
   { href: "/", key: "nav.dashboard", icon: LayoutDashboard },
@@ -34,7 +39,7 @@ const navKeys = [
   { href: "/settings", key: "nav.settings", icon: Settings },
 ] as const;
 
-export function Sidebar() {
+export function Sidebar({ authEnabled = false }: SidebarProps) {
   const pathname = usePathname();
   const { sidebarOpen, setSidebarOpen } = useAppStore();
   const { t, dir } = useI18n();
@@ -118,6 +123,7 @@ export function Sidebar() {
         </nav>
 
         <div className="space-y-2 border-t p-4">
+          <AuthUserMenu authEnabled={authEnabled} />
           <LocaleSwitcher />
           <ThemeToggle />
         </div>

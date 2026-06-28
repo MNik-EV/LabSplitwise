@@ -5,6 +5,7 @@ import { getDictionary } from "@/i18n";
 import { getLocale } from "@/i18n/server";
 import { buildValidationSchemas } from "@/lib/validation-schemas";
 import { ActionError } from "@/lib/errors";
+import { requireSession } from "@/lib/auth-session";
 import { revalidateAll } from "./shared";
 
 export async function getRestaurants() {
@@ -12,6 +13,7 @@ export async function getRestaurants() {
 }
 
 export async function createRestaurant(data: unknown) {
+  await requireSession();
   const locale = await getLocale();
   const { createRestaurantSchema } = buildValidationSchemas(getDictionary(locale).validation);
   const parsed = createRestaurantSchema.parse(data);
@@ -21,6 +23,7 @@ export async function createRestaurant(data: unknown) {
 }
 
 export async function updateRestaurant(data: unknown) {
+  await requireSession();
   const locale = await getLocale();
   const { updateRestaurantSchema } = buildValidationSchemas(getDictionary(locale).validation);
   const parsed = updateRestaurantSchema.parse(data);
@@ -33,6 +36,7 @@ export async function updateRestaurant(data: unknown) {
 }
 
 export async function deleteRestaurant(id: string) {
+  await requireSession();
   if (!id) throw new ActionError("validation.invalidId");
 
   const orderCount = await prisma.order.count({ where: { restaurantId: id } });

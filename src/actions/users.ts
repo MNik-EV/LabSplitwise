@@ -7,6 +7,7 @@ import { buildValidationSchemas } from "@/lib/validation-schemas";
 import { ActionError } from "@/lib/errors";
 import { getWeekRange } from "@/lib/utils";
 import { revalidateAll } from "./shared";
+import { requireSession } from "@/lib/auth-session";
 import { getSettings } from "./settings";
 
 export async function getUsers() {
@@ -40,6 +41,7 @@ export async function getUsersForOrderEdit(orderId?: string) {
 }
 
 export async function createUser(data: unknown) {
+  await requireSession();
   const locale = await getLocale();
   const { createUserSchema } = buildValidationSchemas(getDictionary(locale).validation);
   const parsed = createUserSchema.parse(data);
@@ -51,6 +53,7 @@ export async function createUser(data: unknown) {
 }
 
 export async function updateUser(data: unknown) {
+  await requireSession();
   const locale = await getLocale();
   const { updateUserSchema } = buildValidationSchemas(getDictionary(locale).validation);
   const parsed = updateUserSchema.parse(data);
@@ -63,6 +66,7 @@ export async function updateUser(data: unknown) {
 }
 
 export async function deleteUser(id: string) {
+  await requireSession();
   if (!id) throw new ActionError("validation.invalidId");
 
   const settings = await getSettings();

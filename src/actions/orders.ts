@@ -10,6 +10,7 @@ import { buildValidationSchemas, type CreateOrderInput } from "@/lib/validation-
 import { assertWeekOpen, isWeekClosed } from "@/lib/week-guard";
 import { getWeekRange } from "@/lib/utils";
 import { revalidateAll } from "./shared";
+import { requireSession } from "@/lib/auth-session";
 import { getSettings } from "./settings";
 import { validateOrderBusinessRules } from "@/lib/order-rules";
 
@@ -70,6 +71,7 @@ async function parseOrderInput(data: unknown): Promise<CreateOrderInput> {
 }
 
 export async function createOrder(data: unknown) {
+  await requireSession();
   const parsed = await parseOrderInput(data);
   await validateOrderBusinessRules(parsed);
 
@@ -117,6 +119,7 @@ export async function createOrder(data: unknown) {
 }
 
 export async function updateOrder(data: unknown) {
+  await requireSession();
   const locale = await getLocale();
   const { updateOrderSchema } = buildValidationSchemas(getDictionary(locale).validation);
   const parsed = updateOrderSchema.parse(data);
@@ -173,6 +176,7 @@ export async function updateOrder(data: unknown) {
 }
 
 export async function deleteOrder(id: string) {
+  await requireSession();
   const order = await prisma.order.findUnique({ where: { id } });
   if (!order) throw new ActionError("validation.orderNotFound");
 

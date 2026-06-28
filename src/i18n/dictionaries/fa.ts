@@ -281,6 +281,12 @@ export const dictionary = {
     loadPage: "خطا در بارگذاری صفحه",
     refreshHint: "لطفاً صفحه را رفرش کنید",
     refresh: "رفرش",
+    unauthorized: "برای این عمل باید وارد شوید",
+  },
+  auth: {
+    signIn: "ورود با Authentik",
+    signOut: "خروج",
+    loading: "در حال بررسی ورود...",
   },
 } as const;
 

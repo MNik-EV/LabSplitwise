@@ -129,6 +129,77 @@ prisma/            # Schema & seed
 
 ---
 
+## 🐳 Docker deployment (self-hosted)
+
+Run LabSplitwise with **PostgreSQL** and **Authentik OIDC** on a private network. The database is **not** exposed to the host — only the app port is published.
+
+### Prerequisites
+
+- Docker & Docker Compose
+- [Authentik](https://goauthentik.io/) instance (same Docker network or reachable URL)
+
+### 1 — Configure environment
+
+```bash
+cp .env.docker.example .env
+# Edit .env — set POSTGRES_PASSWORD, AUTH_SECRET, AUTH_URL, Authentik OIDC values
+```
+
+Generate `AUTH_SECRET`:
+
+```bash
+openssl rand -base64 32
+```
+
+### 2 — Authentik OIDC application
+
+In Authentik admin:
+
+1. **Applications → Providers → Create** → OAuth2/OIDC Provider  
+   - Redirect URI: `https://your-domain/api/auth/callback/authentik`
+2. **Applications → Applications → Create** → link the provider
+3. Copy **Client ID**, **Client Secret**, and **Issuer URL** (must end with `/`)
+
+Set in `.env`:
+
+```env
+AUTH_AUTHENTIK_ID=...
+AUTH_AUTHENTIK_SECRET=...
+AUTH_AUTHENTIK_ISSUER=https://auth.example.com/application/o/labsplitwise/
+AUTH_URL=https://labsplitwise.example.com
+AUTH_DISABLED=false
+```
+
+For local Docker testing without SSO: `AUTH_DISABLED=true` (still set a dummy `AUTH_SECRET`).
+
+### 3 — Start stack
+
+```bash
+docker compose up -d --build
+```
+
+Open **http://localhost:3000** (or your `APP_PORT`). On first start the container runs schema migration automatically.
+
+### Architecture
+
+```
+┌─────────────┐     OIDC      ┌────────────┐
+│  Authentik  │◄─────────────►│    app     │ :3000 (published)
+└─────────────┘               └─────┬──────┘
+                                    │ labsplitwise network
+                              ┌─────▼──────┐
+                              │  postgres  │ (internal only)
+                              └────────────┘
+```
+
+Put **Caddy**, **Traefik**, or **nginx** in front for HTTPS. Set `AUTH_URL` to the public HTTPS URL Authentik redirects to.
+
+### Vercel + Authentik (optional)
+
+Add the same auth env vars on Vercel and set `AUTH_DISABLED=false`. Redirect URI: `https://lab-splitwise.vercel.app/api/auth/callback/authentik`.
+
+---
+
 ## 🌍 Deployment (Vercel)
 
 > SQLite **does not work** on Vercel serverless. Use **Neon PostgreSQL** (free).
@@ -172,10 +243,13 @@ GitHub Pages **cannot** run this app (needs server + database). Use Vercel.
 
 ```bash
 npm run dev          # Development server
-npm run build        # Production build
+npm run build        # Production build (Vercel / with DB)
+npm run build:docker # Next.js build only (Docker image)
 npm run start        # Start production server
 npm run db:setup     # Push schema + seed
 npm run lint         # ESLint
+npm run typecheck    # TypeScript
+npm run test         # Vitest unit tests
 ```
 
 ---
