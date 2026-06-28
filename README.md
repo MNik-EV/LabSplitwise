@@ -11,11 +11,11 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-[Features](#-features) · [Demo](#-quick-start) · [Deploy](#-deployment) · [فارسی](#-persian)
+[Features](#-features) · [Live Demo](https://lab-splitwise.vercel.app) · [Deploy](#-deployment) · [فارسی](#-persian)
 
 <br />
 
-<img src="https://raw.githubusercontent.com/user-attachments/assets/placeholder-dashboard.png" alt="LabSplitwise dashboard" width="720" />
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-lab--splitwise.vercel.app-2563eb?style=for-the-badge)](https://lab-splitwise.vercel.app)
 
 *Beautiful bilingual dashboard · RTL/LTR · Dark mode · Real-time expense splitting*
 

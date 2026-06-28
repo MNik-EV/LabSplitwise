@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/stores/app-store";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
-import { useI18n } from "./i18n-provider";
+import { isNavActive } from "@/lib/navigation";
 
 const navKeys = [
   { href: "/", key: "nav.dashboard", icon: LayoutDashboard },
@@ -87,10 +87,7 @@ export function Sidebar() {
 
         <nav className="flex-1 space-y-1 p-4">
           {navKeys.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
+            const isActive = isNavActive(pathname, item.href);
             const Icon = item.icon;
 
             return (
