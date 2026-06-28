@@ -1,4 +1,4 @@
-@import "./globals.css";
+import "./globals.css";
 
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
@@ -31,7 +31,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className="font-sans antialiased">
+      <body className={`${vazirmatn.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
