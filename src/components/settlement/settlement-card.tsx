@@ -1,9 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CopyCardNumber } from "@/components/shared/copy-card-number";
 import { PaymentToggle } from "@/components/settlement/payment-toggle";
@@ -31,6 +30,7 @@ export function SettlementCard({
   const { t, formatMoney, dir } = useI18n();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const money = formatMoney(amount);
+  const canToggle = Boolean(settlementId) && !readOnly;
 
   return (
     <motion.div
@@ -41,37 +41,33 @@ export function SettlementCard({
       <Card
         className={cn(
           "overflow-hidden transition-shadow",
-          isPaid ? "border-success/30 bg-success/5 opacity-90" : "border-border",
+          isPaid ? "border-success/30 bg-success/5" : "border-border",
         )}
       >
-        <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
+        <CardContent className="p-4 sm:p-5">
           <div className="flex items-center gap-3 sm:gap-6">
             <p className="min-w-0 flex-1 truncate text-end text-base font-semibold sm:text-lg">
               {fromUser.name}
             </p>
 
-            <div className="flex shrink-0 flex-col items-center gap-1">
+            <div className="flex shrink-0 flex-col items-center gap-1.5">
+              {canToggle ? (
+                <PaymentToggle settlementId={settlementId!} isPaid={isPaid} />
+              ) : isPaid ? (
+                <CheckCircle2 className="h-9 w-9 text-success" aria-label={t("settlement.paid")} />
+              ) : (
+                <div className="h-9 w-9" aria-hidden />
+              )}
+
               <Arrow className="h-5 w-5 text-primary" aria-hidden />
-              <p className="whitespace-nowrap text-lg font-bold text-primary sm:text-xl">
-                {money}
-              </p>
+              <p className="whitespace-nowrap text-lg font-bold text-primary sm:text-xl">{money}</p>
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
               <p className="truncate text-base font-semibold sm:text-lg">{toUser.name}</p>
-              {toUser.cardNumber && (
-                <CopyCardNumber value={toUser.cardNumber} compact />
-              )}
+              {toUser.cardNumber && <CopyCardNumber value={toUser.cardNumber} compact />}
             </div>
           </div>
-
-          {settlementId && !readOnly ? (
-            <PaymentToggle settlementId={settlementId} isPaid={isPaid} />
-          ) : isPaid ? (
-            <div className="flex justify-center">
-              <Badge variant="success">{t("settlement.paid")}</Badge>
-            </div>
-          ) : null}
         </CardContent>
       </Card>
     </motion.div>

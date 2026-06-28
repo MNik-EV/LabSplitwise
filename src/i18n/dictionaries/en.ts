@@ -205,7 +205,7 @@ export const dictionary = {
     labShare: "Lab contribution",
     orderCount: "Orders",
     transferCount: "Transfers",
-    markAsPaid: "Mark paid",
+    markAsPaid: "Mark done",
     markedPaid: "Payment marked as done",
     markedUnpaid: "Payment mark removed",
     paymentToggleError: "Failed to update payment status",

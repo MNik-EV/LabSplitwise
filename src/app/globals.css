@@ -117,4 +117,17 @@
   .dvx-pdp--centered .dvx-pdp__input {
     text-align: center;
   }
+
+  .icon-centered-field input[type="date"] {
+    text-align: center;
+  }
+
+  .icon-centered-field input[type="date"]::-webkit-datetime-edit,
+  .icon-centered-field input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    text-align: center;
+  }
+
+  .icon-centered-field input[type="date"]::-webkit-date-and-time-value {
+    text-align: center;
+  }
 }

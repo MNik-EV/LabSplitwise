@@ -9,12 +9,17 @@ const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+    centered?: boolean;
+  }
+>(({ className, children, centered, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-soft ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-soft ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      centered
+        ? "grid grid-cols-[1.25rem_1fr_1.25rem] gap-2 [&>span]:col-start-2 [&>span]:min-w-0 [&>span]:truncate [&>span]:text-center [&>svg:last-child]:col-start-3 [&>svg:last-child]:justify-self-end"
+        : "justify-between [&>span]:line-clamp-1",
       className,
     )}
     {...props}

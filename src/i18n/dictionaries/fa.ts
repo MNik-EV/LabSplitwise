@@ -205,7 +205,7 @@ export const dictionary = {
     labShare: "سهم آزمایشگاه",
     orderCount: "تعداد سفارش",
     transferCount: "تعداد انتقال",
-    markAsPaid: "پرداخت شد",
+    markAsPaid: "انجام شد",
     markedPaid: "پرداخت ثبت شد",
     markedUnpaid: "علامت پرداخت برداشته شد",
     paymentToggleError: "خطا در به‌روزرسانی وضعیت پرداخت",

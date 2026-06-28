@@ -280,6 +280,7 @@ export function OrderForm({
                           }}
                         >
                           <SelectTrigger
+                            centered
                             className={errors.restaurantId ? "border-destructive" : ""}
                           >
                             <Store className="h-4 w-4 text-muted-foreground" />
@@ -310,7 +311,7 @@ export function OrderForm({
                             form.clearErrors("payerId");
                           }}
                         >
-                          <SelectTrigger className={errors.payerId ? "border-destructive" : ""}>
+                          <SelectTrigger centered className={errors.payerId ? "border-destructive" : ""}>
                             <CreditCard className="h-4 w-4 text-muted-foreground" />
                             <SelectValue placeholder={t("orders.selectPayer")} />
                           </SelectTrigger>
