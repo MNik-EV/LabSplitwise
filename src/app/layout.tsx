@@ -66,7 +66,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthSessionProvider authEnabled={authEnabled}>
+          <AuthSessionProvider>
             <I18nProvider locale={locale}>
               <ClientErrorBoundary>
                 <PwaRegister />

@@ -36,6 +36,8 @@ const authentik = authentikProvider();
 
 const config = {
   trustHost: true,
+  // Placeholder when SSO is off so /api/auth/session works on Vercel without AUTH_SECRET
+  secret: process.env.AUTH_SECRET ?? (authentik ? undefined : "open-access-no-sso"),
   providers: authentik ? [authentik] : [],
   callbacks: {
     authorized({ auth }) {

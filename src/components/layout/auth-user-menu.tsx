@@ -10,10 +10,13 @@ interface AuthUserMenuProps {
 }
 
 export function AuthUserMenu({ authEnabled }: AuthUserMenuProps) {
+  if (!authEnabled) return null;
+  return <AuthUserMenuInner />;
+}
+
+function AuthUserMenuInner() {
   const { t } = useI18n();
   const { data: session, status } = useSession();
-
-  if (!authEnabled) return null;
 
   if (status === "loading") {
     return (

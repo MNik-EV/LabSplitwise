@@ -2,16 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 
-export function AuthSessionProvider({
-  authEnabled,
-  children,
-}: {
-  authEnabled: boolean;
-  children: React.ReactNode;
-}) {
-  if (!authEnabled) {
-    return children;
-  }
-
+/** Always mount SessionProvider so useSession() is safe when auth UI is shown. */
+export function AuthSessionProvider({ children }: { children: React.ReactNode }) {
   return <SessionProvider>{children}</SessionProvider>;
 }

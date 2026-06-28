@@ -274,6 +274,7 @@ export function OrderForm({
                       )}
                     />
                     <FormError message={errors.restaurantId?.message} />
+                    <p className="text-xs text-muted-foreground">{t("orders.restaurantHint")}</p>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("common.payer")}</Label>
@@ -315,6 +316,16 @@ export function OrderForm({
                       {...form.register("labPerPerson")}
                     />
                     <FormError message={errors.labPerPerson?.message} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="order-notes">{t("orders.notes")}</Label>
+                    <Textarea
+                      id="order-notes"
+                      placeholder={t("orders.notesPlaceholder")}
+                      rows={2}
+                      {...form.register("notes")}
+                    />
+                    <p className="text-xs text-muted-foreground">{t("orders.notesHint")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -385,6 +396,7 @@ export function OrderForm({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
+              <p className="text-sm text-muted-foreground">{t("orders.sharedExpensesDesc")}</p>
               {expenseFields.map((field, index) => {
                 const nameError = errors.sharedExpenses?.[index]?.name;
                 const amountError = errors.sharedExpenses?.[index]?.amount;
@@ -432,15 +444,6 @@ export function OrderForm({
                 <Plus className="h-4 w-4" />
                 {t("orders.addShared")}
               </Button>
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="order-notes">{t("orders.notes")}</Label>
-                <Textarea
-                  id="order-notes"
-                  placeholder={t("orders.notesPlaceholder")}
-                  rows={2}
-                  {...form.register("notes")}
-                />
-              </div>
             </motion.div>
           )}
 
@@ -500,6 +503,15 @@ export function OrderForm({
                     <span>{t("orders.labShare")}</span>
                     <span>{formatMoney(calculation.labTotalAmount)}</span>
                   </div>
+                  {watchedValues.notes?.trim() && (
+                    <>
+                      <Separator />
+                      <div className="text-sm">
+                        <p className="text-muted-foreground">{t("orders.notes")}</p>
+                        <p className="mt-1 whitespace-pre-wrap">{watchedValues.notes}</p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>

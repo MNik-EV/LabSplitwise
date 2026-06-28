@@ -133,6 +133,7 @@ export function OrderDetailView({ order, readOnly = false }: OrderDetailViewProp
                   <StickyNote className="h-4 w-4" />
                   {t("orders.notes")}
                 </CardTitle>
+                <p className="text-xs text-muted-foreground">{t("orders.notesHint")}</p>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
