@@ -4,7 +4,9 @@ import { useMemo, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { IconCenteredField } from "@/components/shared/icon-centered-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,7 +93,9 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="labPerPerson">{t("settings.labPerPerson")}</Label>
-            <Input id="labPerPerson" type="number" {...form.register("labPerPerson")} />
+            <IconCenteredField icon={Building2}>
+              <Input id="labPerPerson" type="number" {...form.register("labPerPerson")} />
+            </IconCenteredField>
             <p className="text-xs text-muted-foreground">
               {t("settings.currencyNote")} · {t("settings.defaultLabel")}:{" "}
               {appDefaults.labPerPerson}

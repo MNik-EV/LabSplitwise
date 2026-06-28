@@ -108,4 +108,13 @@
     flex: 1;
     min-width: 0;
   }
+
+  .dvx-pdp--centered .dvx-pdp__control {
+    display: flex;
+    justify-content: center;
+  }
+
+  .dvx-pdp--centered .dvx-pdp__input {
+    text-align: center;
+  }
 }

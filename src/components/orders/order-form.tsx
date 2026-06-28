@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IconCenteredField } from "@/components/shared/icon-centered-field";
 import { LocaleDatePicker } from "@/components/shared/locale-date-picker";
 import { FormError } from "@/components/shared/form-error";
 import { Label } from "@/components/ui/label";
@@ -258,6 +259,7 @@ export function OrderForm({
                     <LocaleDatePicker
                       id="date"
                       value={form.watch("date")}
+                      invalid={!!errors.date}
                       onChange={(v) =>
                         form.setValue("date", v, { shouldValidate: true, shouldDirty: true })
                       }
@@ -326,12 +328,13 @@ export function OrderForm({
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="labPerPerson">{t("orders.labField")}</Label>
-                    <Input
-                      id="labPerPerson"
-                      type="number"
-                      className={errors.labPerPerson ? "border-destructive" : ""}
-                      {...form.register("labPerPerson")}
-                    />
+                    <IconCenteredField icon={Building2} invalid={!!errors.labPerPerson}>
+                      <Input
+                        id="labPerPerson"
+                        type="number"
+                        {...form.register("labPerPerson")}
+                      />
+                    </IconCenteredField>
                     <FormError message={errors.labPerPerson?.message} />
                   </div>
                   <div className="space-y-1.5">

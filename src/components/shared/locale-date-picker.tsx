@@ -1,8 +1,10 @@
 "use client";
 
+import { Calendar } from "lucide-react";
 import { useTheme } from "next-themes";
 import { PersianDatePicker } from "persian-date-kit";
 import { Input } from "@/components/ui/input";
+import { IconCenteredField } from "@/components/shared/icon-centered-field";
 import { useI18n } from "@/components/layout/i18n-provider";
 import { parseDateInput, toDateInputValue } from "@/lib/date-input";
 import { cn } from "@/lib/utils";
@@ -31,6 +33,7 @@ interface LocaleDatePickerProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  invalid?: boolean;
 }
 
 export function LocaleDatePicker({
@@ -39,25 +42,27 @@ export function LocaleDatePicker({
   onChange,
   disabled,
   className,
+  invalid,
 }: LocaleDatePickerProps) {
   const { locale, t } = useI18n();
   const { resolvedTheme } = useTheme();
 
   if (locale === "en") {
     return (
-      <Input
-        id={id}
-        type="date"
-        value={value}
-        disabled={disabled}
-        className={className}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <IconCenteredField icon={Calendar} className={className} invalid={invalid}>
+        <Input
+          id={id}
+          type="date"
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </IconCenteredField>
     );
   }
 
   return (
-    <div className={cn("w-full", className)}>
+    <IconCenteredField icon={Calendar} className={className} invalid={invalid}>
       <PersianDatePicker
         value={parseDateInput(value)}
         onChange={(date) => {
@@ -69,20 +74,19 @@ export function LocaleDatePicker({
         monthLabels={JALALI_MONTHS}
         weekdays={JALALI_WEEKDAYS}
         theme={resolvedTheme === "dark" ? "dark" : "light"}
-        className="w-full dvx-pdp--fullwidth"
+        className="w-full dvx-pdp--fullwidth dvx-pdp--centered"
         classes={{
           root: "w-full",
-          control: "w-full",
+          control: "w-full border-0 bg-transparent p-0 shadow-none",
           input: cn(
-            "flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-soft",
-            "ring-offset-background placeholder:text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "h-10 w-full border-0 bg-transparent px-0 py-0 text-center text-sm shadow-none",
+            "placeholder:text-muted-foreground",
+            "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
             "disabled:cursor-not-allowed disabled:opacity-50",
           ),
-          button: "rounded-xl border-input bg-background hover:bg-accent",
           popover: "rounded-2xl border border-border shadow-card",
         }}
       />
-    </div>
+    </IconCenteredField>
   );
 }
