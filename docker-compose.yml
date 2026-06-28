@@ -30,12 +30,12 @@ services:
       - "${APP_PORT:-3000}:3000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-labsplitwise}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-labsplitwise}?schema=public
-      AUTH_SECRET: ${AUTH_SECRET:-change-me-generate-with-openssl-rand-base64-32}
       AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      AUTH_SECRET: ${AUTH_SECRET:-}
       AUTH_AUTHENTIK_ID: ${AUTH_AUTHENTIK_ID:-}
       AUTH_AUTHENTIK_SECRET: ${AUTH_AUTHENTIK_SECRET:-}
       AUTH_AUTHENTIK_ISSUER: ${AUTH_AUTHENTIK_ISSUER:-}
-      AUTH_DISABLED: ${AUTH_DISABLED:-false}
+      AUTH_DISABLED: ${AUTH_DISABLED:-}
       NEXT_PUBLIC_DEFAULT_LOCALE: ${NEXT_PUBLIC_DEFAULT_LOCALE:-fa}
       NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON: ${NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON:-350}
     depends_on:

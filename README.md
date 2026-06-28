@@ -11,7 +11,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-[Features](#-features) · [Live Demo](https://lab-splitwise.vercel.app) · [Deploy](#-deployment) · [فارسی](#-persian)
+[Features](#-features) · [Deploy](#-choose-your-deployment) · [Live Demo](https://lab-splitwise.vercel.app) · [فارسی](#-persian)
 
 <br />
 
@@ -58,36 +58,51 @@ Research labs eat lunch together every day. Someone pays, the lab subsidizes eac
 
 ### Tech
 - Next.js 15 App Router · React 19 · Server Actions
-- Prisma ORM · PostgreSQL (Neon free tier)
+- Prisma ORM · PostgreSQL
+- Docker Compose · optional [Authentik](https://goauthentik.io/) OIDC
 - Zustand · React Hook Form · Zod · shadcn/ui · Recharts
 
 ---
 
-## ⚡ Quick Start
+## 🚢 Choose your deployment
+
+Pick **one** path — all work from the same repo. **Login is optional:** if OIDC env vars are empty, the app runs open (no sign-in).
+
+| Path | Best for | Auth | Database |
+|------|----------|------|----------|
+| **[Vercel + Neon](#-vercel--neon)** | Public demo, quick cloud deploy | Off by default | Neon (free) |
+| **[Docker](#-docker-self-hosted)** | Private server, LAN, homelab | Off by default | Bundled Postgres |
+| **[Docker + Authentik](#-docker--authentik-sso-optional)** | Team SSO on your infra | Authentik OIDC | Bundled Postgres |
+| **[Local dev](#-quick-start)** | Development | Off by default | Your Postgres / Neon |
+
+**Auth rule:** SSO turns on **only** when all of these are set: `AUTH_SECRET`, `AUTH_AUTHENTIK_ISSUER`, `AUTH_AUTHENTIK_ID`, `AUTH_AUTHENTIK_SECRET`.  
+Set `AUTH_DISABLED=true` to force open access even if OIDC is configured.
+
+---
+
+## ⚡ Quick Start (local dev)
 
 ### Prerequisites
 - Node.js 20+
-- npm
-
-### Install
+- PostgreSQL ([Neon](https://neon.tech) free tier works)
 
 ```bash
 git clone https://github.com/MNik-EV/LabSplitwise.git
 cd LabSplitwise
+cp .env.example .env        # set DATABASE_URL
 npm install
-npm run db:setup   # migrate + seed sample data
+npm run db:setup            # schema + sample data
 npm run dev
 ```
 
-Open **http://localhost:3000**
+Open **http://localhost:3000** — no login required.
 
 ### Configuration
 
-Edit defaults in **one place** — `src/config/defaults.ts` or `.env`:
-
 ```env
+DATABASE_URL=postgresql://...
 NEXT_PUBLIC_DEFAULT_LOCALE=fa          # fa | en
-NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON=350   # lab subsidy per person
+NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON=350
 ```
 
 Or change at runtime in **Settings → General**.
@@ -95,7 +110,7 @@ Or change at runtime in **Settings → General**.
 | Locale | Direction | Currency display |
 |--------|-----------|------------------|
 | `fa`   | RTL       | `۱۲۳,۴۵۶ تومان`  |
-| `en`   | LTR       | `$123,456`       |
+| `en`   | LTR       | `123,456 Toman`  |
 
 ---
 
@@ -129,113 +144,87 @@ prisma/            # Schema & seed
 
 ---
 
-## 🐳 Docker deployment (self-hosted)
+## 🐳 Docker (self-hosted)
 
-Run LabSplitwise with **PostgreSQL** and **Authentik OIDC** on a private network. The database is **not** exposed to the host — only the app port is published.
-
-### Prerequisites
-
-- Docker & Docker Compose
-- [Authentik](https://goauthentik.io/) instance (same Docker network or reachable URL)
-
-### 1 — Configure environment
+PostgreSQL runs on an **internal Docker network only** (no host port). Only the app is published.
 
 ```bash
+git clone https://github.com/MNik-EV/LabSplitwise.git
+cd LabSplitwise
 cp .env.docker.example .env
-# Edit .env — set POSTGRES_PASSWORD, AUTH_SECRET, AUTH_URL, Authentik OIDC values
-```
-
-Generate `AUTH_SECRET`:
-
-```bash
-openssl rand -base64 32
-```
-
-### 2 — Authentik OIDC application
-
-In Authentik admin:
-
-1. **Applications → Providers → Create** → OAuth2/OIDC Provider  
-   - Redirect URI: `https://your-domain/api/auth/callback/authentik`
-2. **Applications → Applications → Create** → link the provider
-3. Copy **Client ID**, **Client Secret**, and **Issuer URL** (must end with `/`)
-
-Set in `.env`:
-
-```env
-AUTH_AUTHENTIK_ID=...
-AUTH_AUTHENTIK_SECRET=...
-AUTH_AUTHENTIK_ISSUER=https://auth.example.com/application/o/labsplitwise/
-AUTH_URL=https://labsplitwise.example.com
-AUTH_DISABLED=false
-```
-
-For local Docker testing without SSO: `AUTH_DISABLED=true` (still set a dummy `AUTH_SECRET`).
-
-### 3 — Start stack
-
-```bash
+# Edit .env — at minimum set POSTGRES_PASSWORD
 docker compose up -d --build
 ```
 
-Open **http://localhost:3000** (or your `APP_PORT`). On first start the container runs schema migration automatically.
+Open **http://localhost:3000** — works without SSO out of the box.
 
-### Architecture
+On first start the container applies the database schema automatically.
 
 ```
-┌─────────────┐     OIDC      ┌────────────┐
-│  Authentik  │◄─────────────►│    app     │ :3000 (published)
-└─────────────┘               └─────┬──────┘
-                                    │ labsplitwise network
-                              ┌─────▼──────┐
-                              │  postgres  │ (internal only)
-                              └────────────┘
+┌────────────┐     labsplitwise network     ┌────────────┐
+│    app     │ ────────────────────────────►│  postgres  │
+│  :3000     │         (internal only)      │  no port   │
+└────────────┘                              └────────────┘
 ```
 
-Put **Caddy**, **Traefik**, or **nginx** in front for HTTPS. Set `AUTH_URL` to the public HTTPS URL Authentik redirects to.
-
-### Vercel + Authentik (optional)
-
-Add the same auth env vars on Vercel and set `AUTH_DISABLED=false`. Redirect URI: `https://lab-splitwise.vercel.app/api/auth/callback/authentik`.
+Put **Caddy**, **Traefik**, or **nginx** in front for HTTPS on a public domain.
 
 ---
 
-## 🌍 Deployment (Vercel)
+## 🔐 Docker + Authentik SSO (optional)
 
-> SQLite **does not work** on Vercel serverless. Use **Neon PostgreSQL** (free).
+For private deployments with [Authentik](https://goauthentik.io/), add to `.env`:
 
-### Step 1 — Create free database on [Neon](https://neon.tech)
+```env
+AUTH_URL=https://labsplitwise.example.com
+AUTH_SECRET=<openssl rand -base64 32>
+AUTH_AUTHENTIK_ID=your-client-id
+AUTH_AUTHENTIK_SECRET=your-client-secret
+AUTH_AUTHENTIK_ISSUER=https://auth.example.com/application/o/labsplitwise/
+```
 
-1. Sign up → **New Project**
-2. Copy the **Connection string** (PostgreSQL)
-3. Use the **pooled** URL if available (ends with `-pooler`)
+In Authentik admin:
 
-### Step 2 — Add env var on Vercel
+1. **Providers → OAuth2/OIDC** — Redirect URI: `{AUTH_URL}/api/auth/callback/authentik`
+2. **Applications** — link the provider, copy Client ID / Secret / Issuer (trailing `/` required)
 
-1. Vercel → your project → **Settings** → **Environment Variables**
-2. Add:
+Restart: `docker compose up -d --build`
 
-| Name | Value |
-|------|--------|
-| `DATABASE_URL` | `postgresql://...` from Neon |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | `fa` |
-| `NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON` | `350` |
+If Authentik runs in Docker, attach both stacks to the same network so they can reach each other.
 
-3. Apply to **Production**, **Preview**, **Development**
+---
 
-### Step 3 — Redeploy
+## 🌍 Vercel + Neon
 
-**Deployments** → latest deployment → **⋯** → **Redeploy**
+> SQLite **does not work** on Vercel. Use **Neon PostgreSQL** (free).
 
-Build runs `prisma db push` only (no seed — production data is preserved). For local demo data use `npm run db:setup`.
+### 1 — Database on [Neon](https://neon.tech)
 
-Live demo: `https://lab-splitwise.vercel.app`
+Create a project → copy the **connection string**.
+
+### 2 — Deploy on [Vercel](https://vercel.com)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/MNik-EV/LabSplitwise&env=DATABASE_URL,NEXT_PUBLIC_DEFAULT_LOCALE,NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON)
 
-### GitHub Pages
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `DATABASE_URL` | ✅ | From Neon |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | — | `fa` (default) |
+| `NEXT_PUBLIC_DEFAULT_LAB_PER_PERSON` | — | `350` (default) |
+| `AUTH_*` | — | **Leave empty** for open access |
 
-GitHub Pages **cannot** run this app (needs server + database). Use Vercel.
+No auth env vars needed — the live demo works without login.
+
+### 3 — Optional: Authentik on Vercel
+
+Add all `AUTH_*` vars from the Docker SSO section. Redirect URI:  
+`https://your-app.vercel.app/api/auth/callback/authentik`
+
+### Redeploy
+
+Build runs `prisma db push` (no seed on production). Local demo data: `npm run db:setup`.
+
+Live demo: **https://lab-splitwise.vercel.app**
 
 ---
 
@@ -274,7 +263,13 @@ MIT © ZLab
 
 ## 🇮🇷 Persian
 
-**LabSplitwise** یک سیستم مدیریت ناهار و تسویه حساب گروهی برای آزمایشگاه‌هاست — شبیه Splitwise، با پشتیبانی کامل فارسی، الگوریتم Minimum Cash Flow، و رابط کاربری مدرن.
+**LabSplitwise** یک سیستم مدیریت ناهار و تسویه حساب گروهی برای آزمایشگاه‌هاست.
+
+| روش | توضیح |
+|-----|--------|
+| **Vercel** | فقط `DATABASE_URL` — بدون login |
+| **Docker** | `docker compose up` — Postgres داخلی، بدون SSO |
+| **Docker + Authentik** | envهای `AUTH_*` را پر کن — SSO فعال می‌شود |
 
 زبان را از سایدبار (`EN` / `فا`) یا تنظیمات تغییر دهید.
 

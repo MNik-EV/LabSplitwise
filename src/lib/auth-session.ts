@@ -1,13 +1,8 @@
 import { auth } from "@/auth";
 import { ActionError } from "@/lib/errors";
+import { isAuthDisabled } from "@/lib/auth-config";
 
-export function isAuthDisabled(): boolean {
-  return process.env.AUTH_DISABLED === "true";
-}
-
-export function isAuthEnabled(): boolean {
-  return !isAuthDisabled();
-}
+export { isAuthDisabled, isAuthEnabled, hasOidcConfig } from "@/lib/auth-config";
 
 export async function requireSession() {
   if (isAuthDisabled()) return null;

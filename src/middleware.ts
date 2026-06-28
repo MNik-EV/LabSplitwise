@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isAuthDisabled } from "@/lib/auth-config";
 
 function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth")) return true;
@@ -13,7 +14,7 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  if (process.env.AUTH_DISABLED === "true") {
+  if (isAuthDisabled()) {
     return NextResponse.next();
   }
 

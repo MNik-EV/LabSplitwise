@@ -1,15 +1,21 @@
 #!/bin/sh
 set -e
 
-if [ "$AUTH_DISABLED" != "true" ]; then
-  if [ -z "$AUTH_SECRET" ]; then
-    echo "ERROR: AUTH_SECRET is required when AUTH_DISABLED is not true"
-    exit 1
-  fi
-  if [ -z "$AUTH_AUTHENTIK_ISSUER" ] || [ -z "$AUTH_AUTHENTIK_ID" ] || [ -z "$AUTH_AUTHENTIK_SECRET" ]; then
-    echo "ERROR: AUTH_AUTHENTIK_ISSUER, AUTH_AUTHENTIK_ID, and AUTH_AUTHENTIK_SECRET are required"
-    exit 1
-  fi
+has_oidc() {
+  [ -n "$AUTH_SECRET" ] && [ -n "$AUTH_AUTHENTIK_ISSUER" ] && \
+  [ -n "$AUTH_AUTHENTIK_ID" ] && [ -n "$AUTH_AUTHENTIK_SECRET" ]
+}
+
+if [ "$AUTH_DISABLED" = "true" ]; then
+  echo "SSO disabled (AUTH_DISABLED=true) — open access"
+elif has_oidc; then
+  echo "SSO enabled — Authentik OIDC"
+elif [ "$AUTH_DISABLED" = "false" ]; then
+  echo "ERROR: AUTH_DISABLED=false but OIDC env vars are incomplete"
+  echo "Set AUTH_SECRET, AUTH_AUTHENTIK_ISSUER, AUTH_AUTHENTIK_ID, AUTH_AUTHENTIK_SECRET"
+  exit 1
+else
+  echo "SSO not configured — running with open access (set OIDC env vars to enable Authentik)"
 fi
 
 echo "Waiting for database..."
